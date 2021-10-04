@@ -1,32 +1,35 @@
 package routers
 
-import(
+import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	"home-cloud/controllers"
+	"home-cloud/routers/controllers"
 )
 
 func InitRouter() *gin.Engine {
 	router := gin.Default()
-	router.LoadHTMLGlob("views/*")
-	store := cookie.NewStore([]byte("loginuser"))
-	router.Use(sessions.Sessions("mysession", store))
+	store := cookie.NewStore([]byte("bacsadhkwqidh23@#$@#CA*Y(qada213411qwfe23!@$!R!@CASasdh1212CQAWF"),
+		[]byte("akckq3213QWE!@EW!ESVGFQrqfaw23QW")) //cookie secret
+	router.Use(sessions.Sessions("home-cloud-backend-session", store))
+
+	api := router.Group("/api")
 	{
-		//注册：
-		router.GET("/register",controllers.RegisterGet)
-		router.POST("/register",controllers.RegisterPost)
+		//Register
+		api.POST("/register", controllers.UserRegister)
+		//Login and logout
+		//pre-Login for getting salt of the user, will return a random salt if user not exists
+		api.POST("/pre-login", controllers.UserPreLogin)
+		api.POST("/login", controllers.UserLogin)
+		api.GET("/logout", controllers.UserLogout)
 
-		//登录
-		router.GET("/login",controllers.LoginGet)
-		router.POST("/login",controllers.LoginPost)
-
-		router.GET("/exit", controllers.ExitGet)
-
-		router.GET("/upload",controllers.UploadGet)
-		router.POST("/uploadSingle",controllers.UploadSingleFile)
-		router.POST("/uploadMulti",controllers.UploadMultiFiles)
+		//Files API
+		fileAPI := api.Group("/file")
+		{
+			//Upload Files
+			fileAPI.POST("/*path", controllers.UploadFiles)
+			fileAPI.GET("/*path", controllers.GetFileOrFolder)
+		}
 	}
 	return router
-
 }

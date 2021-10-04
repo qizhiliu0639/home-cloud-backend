@@ -1,15 +1,17 @@
 package main
 
 import (
-	"home-cloud/database"
-	"home-cloud/middleware"
+	"home-cloud/models"
 	"home-cloud/routers"
+	"home-cloud/utils"
 )
 
 func main() {
-	database.InitMysql()
+	models.InitDatabase()
 	router := routers.InitRouter()
-	router.Use(middleware.LoggerToFile())
-	router.Static("/static", "./static")
-	router.Run()
+	//router.Use(middleware.LoggerToFile())
+	err := router.Run()
+	if err != nil {
+		utils.GetLogger().Panic("Error to run!")
+	}
 }
