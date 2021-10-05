@@ -4,6 +4,9 @@ import (
 	"errors"
 	"home-cloud/models"
 	"home-cloud/utils"
+	"os"
+	"path"
+	"strconv"
 )
 
 func LoginGetSalt(username string) string {
@@ -37,9 +40,23 @@ func RegisterUser(username string, password string, macSalt string) error {
 		err := user.RegisterUser()
 		if err != nil {
 			return err
-		} else {
-			return nil
 		}
+		//Create user folder
+		user, err = models.GetUserByUsername(username)
+		if err != nil {
+			utils.GetLogger().Panic("Create admin user error")
+		}
+		userID := strconv.FormatUint(user.ID, 10)
+		if err = os.MkdirAll(path.Join(utils.GetConfig().UserDataPath, userID), 0666); err != nil {
+			utils.GetLogger().Panic("Create user folder error")
+		}
+		if err = os.MkdirAll(path.Join(utils.GetConfig().UserDataPath, userID, "data"), 0666); err != nil {
+			utils.GetLogger().Panic("Create user data folder error")
+		}
+		if err = os.MkdirAll(path.Join(utils.GetConfig().UserDataPath, userID, "data", "files"), 0666); err != nil {
+			utils.GetLogger().Panic("Create user file folder error")
+		}
+		return nil
 	} else {
 		return errors.New("username unavailable")
 	}
