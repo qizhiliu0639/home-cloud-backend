@@ -6,7 +6,6 @@ import (
 	"home-cloud/utils"
 	"os"
 	"path"
-	"strconv"
 )
 
 func LoginGetSalt(username string) string {
@@ -46,7 +45,7 @@ func RegisterUser(username string, password string, macSalt string) error {
 		if err != nil {
 			utils.GetLogger().Panic("Create admin user error")
 		}
-		userID := strconv.FormatUint(user.ID, 10)
+		userID := user.ID.String()
 		if err = os.MkdirAll(path.Join(utils.GetConfig().UserDataPath, userID), 0666); err != nil {
 			utils.GetLogger().Panic("Create user folder error")
 		}

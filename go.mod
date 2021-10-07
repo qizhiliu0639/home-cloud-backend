@@ -4,7 +4,9 @@ go 1.17
 
 require (
 	github.com/gin-contrib/sessions v0.0.3
+	github.com/gin-contrib/static v0.0.1
 	github.com/gin-gonic/gin v1.7.4
+	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/sirupsen/logrus v1.8.1
 	gorm.io/driver/mysql v1.1.2
@@ -16,7 +18,6 @@ require (
 	github.com/go-playground/locales v0.13.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
-	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/gorilla/context v1.1.1 // indirect

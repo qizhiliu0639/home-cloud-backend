@@ -4,11 +4,11 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"home-cloud/middleware"
 	"home-cloud/routers/controllers"
 )
 
-func InitRouter() *gin.Engine {
-	router := gin.Default()
+func InitRouter(router *gin.Engine) {
 	store := cookie.NewStore([]byte("bacsadhkwqidh23@#$@#CA*Y(qada213411qwfe23!@$!R!@CASasdh1212CQAWF"),
 		[]byte("akckq3213QWE!@EW!ESVGFQrqfaw23QW")) //cookie secret
 	router.Use(sessions.Sessions("home-cloud-backend-session", store))
@@ -25,11 +25,29 @@ func InitRouter() *gin.Engine {
 
 		//Files API
 		fileAPI := api.Group("/file")
+		fileAPI.Use(middleware.AuthSession())
 		{
-			//Upload Files
-			fileAPI.POST("/*path", controllers.UploadFiles)
-			fileAPI.GET("/*path", controllers.GetFileOrFolder)
+			dir := fileAPI.Group("")
+			dir.Use(middleware.ValidateID("dir"))
+			{
+				//Upload file
+				dir.POST("/upload", controllers.UploadFiles)
+				//Get child in folder (Use folder ID)
+				dir.POST("/list_dir", controllers.GetFolder)
+				//New file or Folder
+				dir.POST("/new", controllers.NewFileOrFolder)
+			}
+			fileID := fileAPI.Group("")
+			fileID.Use(middleware.ValidateID("fileID"))
+			{
+				fileID.POST("/get_info_id", controllers.GetFileOrFolderInfoByID)
+				//Get file (Use file ID)
+				fileID.POST("/get_file", controllers.GetFile)
+				//delete file
+				fileID.POST("/delete", controllers.DeleteFile)
+			}
+			//Check if path exists and return metadata.
+			fileAPI.POST("/get_info_path", controllers.GetFileOrFolderInfoByPath)
 		}
 	}
-	return router
 }

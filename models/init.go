@@ -8,7 +8,6 @@ import (
 	"home-cloud/utils"
 	"os"
 	"path"
-	"strconv"
 )
 
 var DB *gorm.DB
@@ -52,7 +51,7 @@ func Migration() {
 		if err != nil {
 			utils.GetLogger().Panic("Create admin user error")
 		}
-		userID := strconv.FormatUint(user.ID, 10)
+		userID := user.ID.String()
 		if err = os.MkdirAll(path.Join(utils.GetConfig().UserDataPath, userID), 0666); err != nil {
 			utils.GetLogger().Panic("Create user folder error")
 		}
