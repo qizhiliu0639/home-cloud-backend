@@ -35,8 +35,8 @@ func (user *User) GetRootFolder() (*File, error) {
 
 func GetUserMacSalt(username string) (string, error) {
 	var user User
-	err := DB.Select("mac_salt").Where(&User{Username: username}).First(&user).Error
-	return user.MacSalt, err
+	err := DB.Select("account_salt").Where(&User{Username: username}).First(&user).Error
+	return user.AccountSalt, err
 }
 
 func GetUserPassword(username string) (User, error) {
@@ -94,8 +94,8 @@ func InitAdminUser() error {
 	adminUser.Username = "admin"
 	adminUser.Nickname = "admin"
 	adminUser.AccountSalt = utils.GenerateSalt(256)
-	adminUser.Password = utils.GetHashWithSalt("admin", adminUser.AccountSalt)
 	adminUser.MacSalt = utils.GenerateSalt(256)
+	adminUser.Password = utils.GetHashWithSalt("admin", adminUser.MacSalt)
 	adminUser.Status = 1
 	err := adminUser.RegisterUser()
 	return err

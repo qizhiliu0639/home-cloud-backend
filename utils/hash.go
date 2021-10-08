@@ -31,3 +31,14 @@ func GenerateSalt(length int) string {
 	}
 	return string(salt)
 }
+
+func GenerateFakeSalt(username string) string {
+	chars := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890~!@#$%^&*()_+=-/"
+	charLength := len(chars)
+	hash := sha512.Sum512(append([]byte(username), []byte("FQWQWDqwsdq@!234DFQAWASCASEDQOAOS@#$#)T!$(@#")...))
+	salt := hash[:]
+	for i := 0; i < len(salt); i++ {
+		salt[i] = chars[int(salt[i])%charLength]
+	}
+	return string(salt)
+}

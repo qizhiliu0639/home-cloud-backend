@@ -9,11 +9,11 @@ import (
 )
 
 func LoginGetSalt(username string) string {
-	salt, err := models.GetUserMacSalt(username)
+	accountSalt, err := models.GetUserMacSalt(username)
 	if err != nil {
-		salt = utils.GenerateSalt(256)
+		accountSalt = utils.GenerateFakeSalt(username)
 	}
-	return salt
+	return accountSalt
 }
 
 func LoginValidate(username string, password string) bool {
@@ -21,20 +21,20 @@ func LoginValidate(username string, password string) bool {
 	if err != nil {
 		return false
 	}
-	if utils.GetHashWithSalt(password, user.AccountSalt) != user.Password {
+	if utils.GetHashWithSalt(password, user.MacSalt) != user.Password {
 		return false
 	}
 	return true
 }
 
-func RegisterUser(username string, password string, macSalt string) error {
+func RegisterUser(username string, password string, accountSalt string) error {
 	if _, err := models.GetUserByUsername(username); err != nil {
 		user := models.NewUser()
 		user.Username = username
-		accountSalt := utils.GenerateSalt(256)
 		user.AccountSalt = accountSalt
-		user.Password = utils.GetHashWithSalt(password, accountSalt)
+		macSalt := utils.GenerateSalt(256)
 		user.MacSalt = macSalt
+		user.Password = utils.GetHashWithSalt(password, macSalt)
 		user.Nickname = username
 		err := user.RegisterUser()
 		if err != nil {

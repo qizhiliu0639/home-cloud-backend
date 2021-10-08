@@ -13,7 +13,8 @@ func UserPreLogin(c *gin.Context) {
 	if len(username) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid username"})
 	}
-	c.JSON(http.StatusOK, gin.H{"success": 0, "salt": service.LoginGetSalt(username)})
+	accountSalt := service.LoginGetSalt(username)
+	c.JSON(http.StatusOK, gin.H{"success": 0, "account_salt": accountSalt})
 }
 
 // UserLogin Login controller
