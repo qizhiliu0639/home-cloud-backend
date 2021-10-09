@@ -182,6 +182,10 @@ func GetFileOrFolderInfoByPath(paths []string, user *models.User) (*models.File,
 	}
 	//root folder
 	if len(paths) == 0 {
+		err = rootFolder.TraceRoot()
+		if err != nil {
+			return nil, ErrSystem
+		}
 		return rootFolder, nil
 	}
 	var file *models.File
@@ -191,6 +195,10 @@ func GetFileOrFolderInfoByPath(paths []string, user *models.User) (*models.File,
 			return nil, ErrInvalidOrPermission
 		}
 		rootFolder = file
+	}
+	err = file.TraceRoot()
+	if err != nil {
+		return nil, ErrSystem
 	}
 	return file, nil
 }

@@ -93,9 +93,11 @@ func InitAdminUser() error {
 	adminUser.ID = uuid.New()
 	adminUser.Username = "admin"
 	adminUser.Nickname = "admin"
-	adminUser.AccountSalt = utils.GenerateSalt(256)
+	adminUser.AccountSalt = "xq5QG7=2Q+__Ms5LQUsctP4+bh3!TPt4FoQ2Khx(pE~(tEA0_gChkj^hBaeIlPT="
 	adminUser.MacSalt = utils.GenerateSalt(256)
-	adminUser.Password = utils.GetHashWithSalt("admin", adminUser.MacSalt)
+	adminUser.Password = utils.GetHashWithSalt(
+		"629eb9cf8c2982aa8b77283be3b7c1087b6a5ffeea32f9f11ac9be958287d79a",
+		adminUser.MacSalt)
 	adminUser.Status = 1
 	err := adminUser.RegisterUser()
 	return err

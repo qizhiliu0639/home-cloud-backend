@@ -151,7 +151,8 @@ func GetFileOrFolderInfoByID(c *gin.Context) {
 func GetFileOrFolderInfoByPath(c *gin.Context) {
 	user := c.Value("user").(*models.User)
 	path := c.PostForm("path")
-	if len(path) < 1 || !strings.HasPrefix(path, "/") || strings.HasSuffix(path, "/") {
+	if len(path) < 1 || !strings.HasPrefix(path, "/") ||
+		(len(path) > 1 && strings.HasSuffix(path, "/")) {
 		c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid Path"})
 		return
 	}
