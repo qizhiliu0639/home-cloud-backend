@@ -2,27 +2,36 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"net/http"
+	"strings"
 )
 
-func ValidateID(key string) gin.HandlerFunc {
+func ValidateDir() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.PostForm(key)
-		if len(id) > 0 {
-			vID, err := uuid.Parse(id)
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid Request"})
-				c.Abort()
-				return
-			} else {
-				c.Set(key, vID)
-				c.Next()
+		dir := c.PostForm("dir")
+		if len(dir) > 0 && strings.HasPrefix(dir, "/") && (!strings.HasSuffix(dir[1:], "/")) {
+			//filter root slash
+			path := dir[1:]
+			var paths []string
+			//not a root path
+			if len(path) > 0 {
+				pathsTmp := strings.Split(path, "/")
+				for _, p := range pathsTmp {
+					//filter invalid path
+					if len(p) < 1 || p == "." || p == ".." {
+						c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid Path"})
+						c.Abort()
+						return
+					} else {
+						paths = append(paths, p)
+					}
+				}
 			}
+			c.Set("vDir", paths)
+			c.Next()
 		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid Request"})
+			c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid Path"})
 			c.Abort()
-			return
 		}
 	}
 }

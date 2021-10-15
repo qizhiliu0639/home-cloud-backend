@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"home-cloud/service"
@@ -61,9 +62,16 @@ func UserRegister(c *gin.Context) {
 	password := c.PostForm("password")
 	accountSalt := c.PostForm("accountSalt")
 
+	if len(accountSalt) < 64 || len(password) < 64 {
+		c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid Request!"})
+		return
+	}
 	if err := service.RegisterUser(username, password, accountSalt); err != nil {
-		//Todo return specific information if it is a system error
-		c.JSON(http.StatusForbidden, gin.H{"success": 1, "message": "Username invalid!"})
+		if errors.Is(err, service.ErrUsernameInvalid) {
+			c.JSON(http.StatusForbidden, gin.H{"success": 1, "message": "Invalid Username!"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"success": 1, "message": "Server Error!"})
+		}
 	} else {
 		c.JSON(http.StatusOK, gin.H{"success": 0})
 	}

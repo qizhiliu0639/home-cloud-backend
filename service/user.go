@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"home-cloud/models"
 	"home-cloud/utils"
 	"os"
@@ -36,7 +35,7 @@ func RegisterUser(username string, password string, accountSalt string) error {
 		user.MacSalt = macSalt
 		user.Password = utils.GetHashWithSalt(password, macSalt)
 		user.Nickname = username
-		err := user.RegisterUser()
+		err = user.RegisterUser()
 		if err != nil {
 			return err
 		}
@@ -44,19 +43,23 @@ func RegisterUser(username string, password string, accountSalt string) error {
 		user, err = models.GetUserByUsername(username)
 		if err != nil {
 			utils.GetLogger().Panic("Create admin user error")
+			return err
 		}
 		userID := user.ID.String()
 		if err = os.MkdirAll(path.Join(utils.GetConfig().UserDataPath, userID), 0666); err != nil {
 			utils.GetLogger().Panic("Create user folder error")
+			return err
 		}
 		if err = os.MkdirAll(path.Join(utils.GetConfig().UserDataPath, userID, "data"), 0666); err != nil {
 			utils.GetLogger().Panic("Create user data folder error")
+			return err
 		}
 		if err = os.MkdirAll(path.Join(utils.GetConfig().UserDataPath, userID, "data", "files"), 0666); err != nil {
 			utils.GetLogger().Panic("Create user file folder error")
+			return err
 		}
 		return nil
 	} else {
-		return errors.New("username unavailable")
+		return ErrUsernameInvalid
 	}
 }

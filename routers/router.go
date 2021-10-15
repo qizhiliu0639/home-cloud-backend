@@ -26,28 +26,20 @@ func InitRouter(router *gin.Engine) {
 		//Files API
 		fileAPI := api.Group("/file")
 		fileAPI.Use(middleware.AuthSession())
+		fileAPI.Use(middleware.ValidateDir())
 		{
-			dir := fileAPI.Group("")
-			dir.Use(middleware.ValidateID("dir"))
-			{
-				//Upload file
-				dir.POST("/upload", controllers.UploadFiles)
-				//Get child in folder (Use folder ID)
-				dir.POST("/list_dir", controllers.GetFolder)
-				//New file or Folder
-				dir.POST("/new", controllers.NewFileOrFolder)
-			}
-			fileID := fileAPI.Group("")
-			fileID.Use(middleware.ValidateID("fileID"))
-			{
-				fileID.POST("/get_info_id", controllers.GetFileOrFolderInfoByID)
-				//Get file (Use file ID)
-				fileID.POST("/get_file", controllers.GetFile)
-				//delete file
-				fileID.POST("/delete", controllers.DeleteFile)
-			}
-			//Check if path exists and return metadata.
-			fileAPI.POST("/get_info_path", controllers.GetFileOrFolderInfoByPath)
+			//Upload file
+			fileAPI.POST("/upload", controllers.UploadFiles)
+			//Get child in folder (Use folder ID)
+			fileAPI.POST("/list_dir", controllers.GetFolder)
+			//New file or Folder
+			fileAPI.POST("/new", controllers.NewFileOrFolder)
+
+			fileAPI.POST("/get_info", controllers.GetFileOrFolderInfoByPath)
+			//Get file (Use file ID)
+			fileAPI.POST("/get_file", controllers.GetFile)
+			//delete file
+			fileAPI.POST("/delete", controllers.DeleteFile)
 		}
 	}
 }
