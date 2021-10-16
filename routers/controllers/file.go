@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"home-cloud/models"
 	"home-cloud/service"
+	"home-cloud/utils"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -155,7 +156,7 @@ func GetFile(c *gin.Context) {
 		} else {
 			status = http.StatusBadRequest
 		}
-		c.Status(status)
+		c.AbortWithStatus(status)
 		return
 	}
 	var dst string
@@ -163,16 +164,17 @@ func GetFile(c *gin.Context) {
 	dst, filename, err = service.GetFile(file, user)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidOrPermission) {
-			c.Status(http.StatusNotFound)
+			c.AbortWithStatus(http.StatusNotFound)
 		} else {
-			c.Status(http.StatusBadRequest)
+			c.AbortWithStatus(http.StatusBadRequest)
 		}
 		return
 	}
 	var f []byte
 	f, err = ioutil.ReadFile(dst)
 	if err != nil {
-		c.Status(http.StatusInternalServerError)
+		utils.GetLogger().Errorf("Error when finding %s for %s", dst, file.Position)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
@@ -184,7 +186,8 @@ func GetFile(c *gin.Context) {
 		c.Writer.Header().Del("Content-Disposition")
 		c.Writer.Header().Del("Content-Length")
 		c.Writer.Header().Del("Content-Type")
-		c.Status(http.StatusInternalServerError)
+		utils.GetLogger().Errorf("Error when writing %s to response", dst)
+		c.AbortWithStatus(http.StatusInternalServerError)
 	}
 }
 

@@ -19,8 +19,11 @@ func ValidateDir() gin.HandlerFunc {
 				for _, p := range pathsTmp {
 					//filter invalid path
 					if len(p) < 1 || p == "." || p == ".." {
-						c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid Path"})
-						c.Abort()
+						if c.Request.URL.Path != "/api/file/get_file" {
+							c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid Path"})
+						} else {
+							c.AbortWithStatus(http.StatusBadRequest)
+						}
 						return
 					} else {
 						paths = append(paths, p)
@@ -30,8 +33,11 @@ func ValidateDir() gin.HandlerFunc {
 			c.Set("vDir", paths)
 			c.Next()
 		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid Path"})
-			c.Abort()
+			if c.Request.URL.Path != "/api/file/get_file" {
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid Path"})
+			} else {
+				c.AbortWithStatus(http.StatusBadRequest)
+			}
 		}
 	}
 }

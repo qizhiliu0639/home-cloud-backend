@@ -13,14 +13,12 @@ func AuthSession() gin.HandlerFunc {
 		session := sessions.Default(c)
 		username, ok := session.Get("user").(string)
 		if !ok || len(username) == 0 {
-			c.JSON(http.StatusUnauthorized, gin.H{"success": 1, "message": "You have not logged in!"})
-			c.Abort()
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"success": 1, "message": "You have not logged in!"})
 			return
 		}
 		user, err := models.GetUserByUsername(username)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"success": 1, "message": "You have not logged in!"})
-			c.Abort()
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"success": 1, "message": "You have not logged in!"})
 			return
 		}
 		utils.GetLogger().Info("User " + user.Username + " request comes")
