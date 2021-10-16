@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"home-cloud/models"
 	"home-cloud/service"
 	"io/ioutil"
@@ -202,7 +203,12 @@ func GetFileOrFolderInfoByPath(c *gin.Context) {
 		}
 		c.JSON(status, gin.H{"success": 1, "message": GetErrorMessage(err)})
 	} else {
-		c.JSON(http.StatusOK, gin.H{"success": 0, "file": file})
+		if file.IsDir == 1 {
+			c.JSON(http.StatusOK, gin.H{"success": 0, "type": "folder", "root": file.ParentId == uuid.Nil, "info": file})
+		} else {
+			c.JSON(http.StatusOK, gin.H{"success": 0, "type": "file", "info": file})
+		}
+
 	}
 }
 
