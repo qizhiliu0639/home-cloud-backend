@@ -49,7 +49,5 @@ func FrontendFileHandler(staticFS embed.FS, root string) gin.HandlerFunc {
 		}
 		c.Abort()
 		return
-
 	}
-
 }

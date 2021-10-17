@@ -22,7 +22,8 @@ func ValidateDir() gin.HandlerFunc {
 						if c.Request.URL.Path != "/api/file/get_file" {
 							c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid Path"})
 						} else {
-							c.AbortWithStatus(http.StatusBadRequest)
+							c.String(http.StatusBadRequest, "400 Bad Request")
+							c.Abort()
 						}
 						return
 					} else {
@@ -36,7 +37,8 @@ func ValidateDir() gin.HandlerFunc {
 			if c.Request.URL.Path != "/api/file/get_file" {
 				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid Path"})
 			} else {
-				c.AbortWithStatus(http.StatusBadRequest)
+				c.String(http.StatusBadRequest, "400 Bad Request")
+				c.Abort()
 			}
 		}
 	}

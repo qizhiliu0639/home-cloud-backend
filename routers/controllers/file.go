@@ -142,21 +142,19 @@ func NewFileOrFolder(c *gin.Context) {
 }
 
 func GetFile(c *gin.Context) {
-	//This will only return default error page because it may not be processed by axios
+	//This will only return error page in plain text because it may not be processed by axios
 	user := c.Value("user").(*models.User)
 	vDir := c.Value("vDir").([]string)
 
 	file, err := service.GetFileOrFolderInfoByPath(vDir, user)
 	if err != nil {
-		var status int
 		if errors.Is(err, service.ErrInvalidOrPermission) {
-			status = http.StatusNotFound
+			c.String(http.StatusNotFound, "404 Not Found")
 		} else if errors.Is(err, service.ErrSystem) {
-			status = http.StatusInternalServerError
+			c.String(http.StatusInternalServerError, "500 Internal Server Error")
 		} else {
-			status = http.StatusBadRequest
+			c.String(http.StatusBadRequest, "400 Bad Request")
 		}
-		c.AbortWithStatus(status)
 		return
 	}
 	var dst string
@@ -164,9 +162,9 @@ func GetFile(c *gin.Context) {
 	dst, filename, err = service.GetFile(file, user)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidOrPermission) {
-			c.AbortWithStatus(http.StatusNotFound)
+			c.String(http.StatusNotFound, "404 Not Found")
 		} else {
-			c.AbortWithStatus(http.StatusBadRequest)
+			c.String(http.StatusBadRequest, "400 Bad Request")
 		}
 		return
 	}
@@ -174,7 +172,7 @@ func GetFile(c *gin.Context) {
 	f, err = ioutil.ReadFile(dst)
 	if err != nil {
 		utils.GetLogger().Errorf("Error when finding %s for %s", dst, file.Position)
-		c.AbortWithStatus(http.StatusInternalServerError)
+		c.String(http.StatusInternalServerError, "500 Internal Server Error")
 		return
 	}
 	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
@@ -187,7 +185,7 @@ func GetFile(c *gin.Context) {
 		c.Writer.Header().Del("Content-Length")
 		c.Writer.Header().Del("Content-Type")
 		utils.GetLogger().Errorf("Error when writing %s to response", dst)
-		c.AbortWithStatus(http.StatusInternalServerError)
+		c.String(http.StatusInternalServerError, "500 Internal Server Error")
 	}
 }
 
