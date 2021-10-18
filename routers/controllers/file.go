@@ -212,11 +212,11 @@ func GetFileOrFolderInfoByPath(c *gin.Context) {
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"success": 1, "message": GetErrorMessage(err)})
 			} else {
-				c.JSON(http.StatusOK, gin.H{"success": 0, "type": "file", "info": file, "parent": folder})
+				c.JSON(http.StatusOK, gin.H{"success": 0, "type": "file", "info": file, "parent_root": file.ParentId == uuid.Nil, "parent_info": folder})
 			}
 		}
-
 	}
+
 }
 
 func DeleteFile(c *gin.Context) {
