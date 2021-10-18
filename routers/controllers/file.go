@@ -207,7 +207,13 @@ func GetFileOrFolderInfoByPath(c *gin.Context) {
 		if file.IsDir == 1 {
 			c.JSON(http.StatusOK, gin.H{"success": 0, "type": "folder", "root": file.ParentId == uuid.Nil, "info": file})
 		} else {
-			c.JSON(http.StatusOK, gin.H{"success": 0, "type": "file", "info": file})
+			var folder *models.File
+			folder, err = service.GetFileOrFolderInfoByID(file.ParentId, user)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"success": 1, "message": GetErrorMessage(err)})
+			} else {
+				c.JSON(http.StatusOK, gin.H{"success": 0, "type": "file", "info": file, "parent": folder})
+			}
 		}
 
 	}

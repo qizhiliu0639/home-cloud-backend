@@ -23,6 +23,12 @@ func InitRouter(router *gin.Engine) {
 		api.POST("/login", controllers.UserLogin)
 		api.GET("/logout", controllers.UserLogout)
 
+		statusAPI := api.Group("/status")
+		statusAPI.Use(middleware.AuthSession())
+		{
+			statusAPI.GET("/user", controllers.GetUserStatus)
+		}
+
 		//Files API
 		fileAPI := api.Group("/file")
 		fileAPI.Use(middleware.AuthSession())

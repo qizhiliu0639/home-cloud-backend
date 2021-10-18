@@ -10,13 +10,13 @@ import (
 type File struct {
 	// 表字段
 	gorm.Model
-	ID uuid.UUID `gorm:"primaryKey"`
+	ID uuid.UUID `gorm:"type:char(36);primaryKey"`
 	//1 for folder and 0 for file
 	IsDir int    `gorm:"default:0;not null"`
-	Name  string `gorm:"type:varchar(255);uniqueIndex:idx_only_one"`
+	Name  string `gorm:"type:varchar(191);not null;uniqueIndex:idx_only_one"`
 	//null for root folder
-	ParentId  uuid.UUID `gorm:"default:null;uniqueIndex:idx_only_one"`
-	OwnerId   uuid.UUID
+	ParentId  uuid.UUID `gorm:"type:char(36);not null;uniqueIndex:idx_only_one"`
+	OwnerId   uuid.UUID `gorm:"type:char(36);not null;uniqueIndex:idx_only_one"`
 	CreatorId uuid.UUID
 	Size      uint64 `gorm:"not null"`
 	//1 for special hidden file or folder, 0 for others
@@ -82,7 +82,7 @@ func (file *File) GetChildInFolder() ([]*File, error) {
 		return nil, err
 	}
 	var children []*File
-	err = DB.Where(&File{ParentId: file.ID, OwnerId: file.OwnerId}).Find(&children).Error
+	err = DB.Where(&File{ParentId: file.ID, OwnerId: file.OwnerId}).Order("is_dir desc").Order("name").Find(&children).Error
 	if (err != nil) && (!errors.Is(err, gorm.ErrRecordNotFound)) {
 		return nil, err
 	}

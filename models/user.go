@@ -8,7 +8,7 @@ import (
 
 type User struct {
 	gorm.Model
-	ID          uuid.UUID `gorm:"primaryKey;"`
+	ID          uuid.UUID `gorm:"type:char(36);primaryKey;"`
 	Username    string    `gorm:"type:varchar(50);unique;not null"`
 	Nickname    string    `gorm:"type:varchar(50);not null"`
 	Email       string    `gorm:"type:varchar(50)"`
@@ -28,8 +28,7 @@ func (user *User) BeforeCreate(tx *gorm.DB) error {
 
 func (user *User) GetRootFolder() (*File, error) {
 	var file File
-	err := DB.Where(&File{OwnerId: user.ID}).
-		Where("parent_id is null").First(&file).Error
+	err := DB.Where(&File{OwnerId: user.ID}).Where("parent_id = ?", uuid.Nil).First(&file).Error
 	return &file, err
 }
 
@@ -70,10 +69,11 @@ func (user *User) RegisterUser() error {
 	}
 	rootFolder := NewFile()
 	rootFolder.ID = uuid.New()
+	rootFolder.ParentId = uuid.Nil
 	rootFolder.OwnerId = user.ID
 	rootFolder.CreatorId = user.ID
 	rootFolder.IsDir = 1
-	rootFolder.Name = user.Username
+	rootFolder.Name = "Home"
 	err = rootFolder.CreateFile()
 	return err
 }
