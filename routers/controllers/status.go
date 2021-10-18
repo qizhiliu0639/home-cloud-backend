@@ -9,5 +9,5 @@ import (
 // GetUserStatus Check if logged in and get user status
 func GetUserStatus(c *gin.Context) {
 	user := c.Value("user").(*models.User)
-	c.JSON(http.StatusOK, gin.H{"username": user.Username, "status": user.Status})
+	c.JSON(http.StatusOK, gin.H{"success": 0, "username": user.Username, "status": user.Status})
 }
