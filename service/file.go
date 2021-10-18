@@ -28,6 +28,7 @@ func UploadFile(upFile *multipart.FileHeader, user *models.User, folder *models.
 	file.CreatorId = user.ID
 	file.Size = uint64(upFile.Size)
 	file.ParentId = folder.ID
+	file.FileType = utils.GetFileTypeByName(file.Name)
 
 	dst := path.Join(utils.GetConfig().UserDataPath, user.ID.String(),
 		"data", "files", file.RealPath)
@@ -109,6 +110,9 @@ func NewFileOrFolder(folder *models.File, user *models.User, newName string, t s
 	file.CreatorId = user.ID
 	file.Size = 0
 	file.ParentId = folder.ID
+	if file.IsDir == 0 {
+		file.FileType = utils.GetFileTypeByName(file.Name)
+	}
 
 	if t == "file" {
 		dst := path.Join(utils.GetConfig().UserDataPath, user.ID.String(),

@@ -23,7 +23,7 @@ type File struct {
 	Status         int    `gorm:"default:0"`
 	Locked         int    `gorm:"default:0"`
 	Version        uint64 `gorm:"default:0"`
-	FileType       int    `gorm:"default:0"`
+	FileType       string `gorm:"default:'other'"`
 	RealPath       string `gorm:"not null"`
 	Thumbnail      uint64
 	SharedEnabled  int `gorm:"default:0"`
