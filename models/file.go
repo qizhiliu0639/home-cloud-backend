@@ -17,8 +17,8 @@ type File struct {
 	//null for root folder
 	ParentId  uuid.UUID `gorm:"type:char(36);not null;uniqueIndex:idx_only_one"`
 	OwnerId   uuid.UUID `gorm:"type:char(36);not null;uniqueIndex:idx_only_one"`
-	CreatorId uuid.UUID
-	Size      uint64 `gorm:"not null"`
+	CreatorId uuid.UUID `gorm:"type:char(36);not null"`
+	Size      uint64    `gorm:"not null"`
 	//1 for special hidden file or folder, 0 for others
 	Status         int    `gorm:"default:0"`
 	Locked         int    `gorm:"default:0"`
