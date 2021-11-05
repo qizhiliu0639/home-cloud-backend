@@ -11,4 +11,5 @@ var (
 	ErrConflict            = errors.New("file name conflicts with folder")
 	ErrSystem              = errors.New("system error")
 	ErrUsernameInvalid     = errors.New("username unavailable")
+	ErrFavorite            = errors.New("error when deal with favorite")
 )

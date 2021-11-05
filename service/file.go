@@ -241,5 +241,20 @@ func DeleteFileRecursively(file *models.File, user *models.User) {
 			count = len(deleteQueue)
 		}
 	}
+}
 
+func ChangeFavoriteStatus(file *models.File, user *models.User) (err error) {
+	if file.OwnerId != user.ID {
+		err = ErrInvalidOrPermission
+		return
+	}
+	if file.Favorite == 0 {
+		err = file.AddFavorite()
+	} else {
+		err = file.CancelFavorite()
+	}
+	if err != nil {
+		err = ErrFavorite
+	}
+	return err
 }
