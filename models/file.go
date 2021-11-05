@@ -29,6 +29,7 @@ type File struct {
 	SharedEnabled  int `gorm:"default:0"`
 	DownloadStatus int `gorm:"default:0"`
 	Encryption     int `gorm:"default:0"`
+	Favorite       int `gorm:"default:0"`
 
 	// 数据库忽略字段
 	Position string `gorm:"-"`
@@ -119,4 +120,12 @@ func (file *File) DeleteFile() {
 		return
 	}
 	DB.Unscoped().Delete(file)
+}
+
+func (file *File) AddFavorite() error {
+	return DB.Model(&file).Update("favorite", 1).Error
+}
+
+func (file *File) CancelFavorite() error {
+	return DB.Model(&file).Update("favorite", 0).Error
 }

@@ -46,6 +46,8 @@ func InitRouter(router *gin.Engine) {
 			fileAPI.POST("/get_file", controllers.GetFile)
 			//delete file
 			fileAPI.POST("/delete", controllers.DeleteFile)
+			//Add favorite file
+			fileAPI.PUT("/favorite", controllers.DealWithFavorite)
 		}
 	}
 }

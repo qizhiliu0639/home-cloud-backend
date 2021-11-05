@@ -253,3 +253,38 @@ func DeleteFile(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": 0})
 	}
 }
+
+func DealWithFavorite(c *gin.Context) {
+	user := c.Value("user").(*models.User)
+	vDir := c.Value("vDir").([]string)
+
+	file, err := service.GetFileOrFolderInfoByPath(vDir, user)
+	if err != nil {
+		var status int
+		if errors.Is(err, service.ErrInvalidOrPermission) {
+			status = http.StatusNotFound
+		} else if errors.Is(err, service.ErrSystem) {
+			status = http.StatusInternalServerError
+		} else {
+			status = http.StatusBadRequest
+		}
+		c.JSON(status, gin.H{"success": 1, "message": GetErrorMessage(err)})
+		return
+	}
+
+	err = service.ChangeFavoriteStatus(file, user)
+	if err != nil {
+		var status int
+		if errors.Is(err, service.ErrInvalidOrPermission) {
+			status = http.StatusNotFound
+		} else if errors.Is(err, service.ErrSystem) {
+			status = http.StatusInternalServerError
+		} else {
+			status = http.StatusBadRequest
+		}
+		c.JSON(status, gin.H{"success": 1, "message": GetErrorMessage(err)})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"success": 0})
+	}
+
+}
