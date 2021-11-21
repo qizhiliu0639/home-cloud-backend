@@ -16,9 +16,9 @@ type User struct {
 	AccountSalt string    `gorm:"size:64;not null"`
 	MacSalt     string    `gorm:"size:64;not null"`
 	// 0 for user, 1 for admin, 2 for resetting password, 3 for resetting two-factor auth
-	// 4 for resetting both, 5 for disabled user
-	Status  int `gorm:"default:0;comment:'user status"`
-	Storage uint64
+	// 4 for resetting both, 5 for disabled user, 6 for manager
+	Status  int    `gorm:"default:0;comment:'user status"`
+	Storage uint64 `gorm:"default:10240;comment:'user Storage"`
 }
 
 func (user *User) BeforeCreate(tx *gorm.DB) error {
@@ -99,6 +99,19 @@ func InitAdminUser() error {
 		"629eb9cf8c2982aa8b77283be3b7c1087b6a5ffeea32f9f11ac9be958287d79a",
 		adminUser.MacSalt)
 	adminUser.Status = 1
+	adminUser.Storage = 100
 	err := adminUser.RegisterUser()
 	return err
+}
+
+func (user *User) UpdateStorage(newSize uint64) error {
+	return DB.Model(&user).Update("storage", newSize).Error
+}
+
+func (user *User) AddMangerUserAuth() error {
+	return DB.Model(&user).Update("status", 6).Error
+}
+
+func (user *User) CancelMangerUserAuth() error {
+	return DB.Model(&user).Update("status", 0).Error
 }
