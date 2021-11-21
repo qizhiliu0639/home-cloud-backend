@@ -63,3 +63,42 @@ func RegisterUser(username string, password string, accountSalt string) error {
 		return ErrUsernameInvalid
 	}
 }
+
+func AddManageUserAuth(AdminUser *models.User, user *models.User) (err error) {
+	if AdminUser.Status != 1 {
+		err = ErrInvalidAuth
+		return err
+	}
+
+	err = user.AddMangerUserAuth()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func CancelManageUserAuth(AdminUser *models.User, user *models.User) (err error) {
+	if AdminUser.Status != 1 {
+		err = ErrInvalidAuth
+		return err
+	}
+
+	err = user.CancelMangerUserAuth()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func AdjustUserStorage(AdminUser *models.User, user *models.User) (err error) {
+	if AdminUser.Status != 1 && AdminUser.Status != 6 {
+		err = ErrInvalidAuth
+		return err
+	}
+
+	err = user.UpdateStorage(user.Storage + 10240)
+	if err != nil {
+		err = ErrStorage
+	}
+	return err
+}

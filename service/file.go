@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
@@ -29,6 +30,17 @@ func UploadFile(upFile *multipart.FileHeader, user *models.User, folder *models.
 	file.Size = uint64(upFile.Size)
 	file.ParentId = folder.ID
 	file.FileType = utils.GetFileTypeByName(file.Name)
+
+	fmt.Println("file size", file.Size)
+	fmt.Println("user.Storage", user.Storage)
+	if user.Storage < file.Size {
+		fmt.Println("not enough storage")
+		return ErrNotEnoughStorage
+	} else {
+		if err = user.UpdateStorage(user.Storage - file.Size); err != nil {
+			return ErrStorage
+		}
+	}
 
 	dst := path.Join(utils.GetConfig().UserDataPath, user.ID.String(),
 		"data", "files", file.RealPath)
@@ -205,6 +217,9 @@ func DeleteFile(file *models.File, user *models.User) (err error) {
 	if file.OwnerId != user.ID {
 		err = ErrInvalidOrPermission
 		return
+	}
+	if err = user.UpdateStorage(user.Storage + file.Size); err != nil {
+		return ErrStorage
 	}
 	//Will not raise error
 	DeleteFileRecursively(file, user)

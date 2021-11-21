@@ -12,4 +12,7 @@ var (
 	ErrSystem              = errors.New("system error")
 	ErrUsernameInvalid     = errors.New("username unavailable")
 	ErrFavorite            = errors.New("error when deal with favorite")
+	ErrStorage             = errors.New("error when deal with Storage")
+	ErrNotEnoughStorage    = errors.New("not enough Storage")
+	ErrInvalidAuth         = errors.New("this account has no authorization")
 )

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"home-cloud/models"
 	"home-cloud/service"
 	"home-cloud/utils"
 	"net/http"
@@ -68,6 +69,48 @@ func UserRegister(c *gin.Context) {
 	}
 	if err := service.RegisterUser(username, password, accountSalt); err != nil {
 		if errors.Is(err, service.ErrUsernameInvalid) {
+			c.JSON(http.StatusForbidden, gin.H{"success": 1, "message": "Invalid Username!"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"success": 1, "message": "Server Error!"})
+		}
+	} else {
+		c.JSON(http.StatusOK, gin.H{"success": 0})
+	}
+}
+
+func AddManageAuth(c *gin.Context) {
+	AdminUser := c.Value("AdminUser").(*models.User)
+	user := c.Value("user").(*models.User)
+	if err := service.AddManageUserAuth(AdminUser, user); err != nil {
+		if errors.Is(err, service.ErrInvalidAuth) {
+			c.JSON(http.StatusForbidden, gin.H{"success": 1, "message": "Invalid Username!"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"success": 1, "message": "Server Error!"})
+		}
+	} else {
+		c.JSON(http.StatusOK, gin.H{"success": 0})
+	}
+}
+
+func CancelManageAuth(c *gin.Context) {
+	AdminUser := c.Value("AdminUser").(*models.User)
+	user := c.Value("user").(*models.User)
+	if err := service.CancelManageUserAuth(AdminUser, user); err != nil {
+		if errors.Is(err, service.ErrInvalidAuth) {
+			c.JSON(http.StatusForbidden, gin.H{"success": 1, "message": "Invalid Username!"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"success": 1, "message": "Server Error!"})
+		}
+	} else {
+		c.JSON(http.StatusOK, gin.H{"success": 0})
+	}
+}
+
+func AddStorageToUser(c *gin.Context) {
+	AdminUser := c.Value("AdminUser").(*models.User)
+	user := c.Value("user").(*models.User)
+	if err := service.AdjustUserStorage(AdminUser, user); err != nil {
+		if errors.Is(err, service.ErrInvalidAuth) {
 			c.JSON(http.StatusForbidden, gin.H{"success": 1, "message": "Invalid Username!"})
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{"success": 1, "message": "Server Error!"})
