@@ -66,6 +66,7 @@ func updateFile(upFile *multipart.FileHeader, user *models.User, folderID uuid.U
 	if file.IsDir == 1 {
 		return nil, ErrConflict
 	}
+	oldSize := file.Size
 	oldFilePath := path.Join(utils.GetConfig().UserDataPath, user.ID.String(),
 		"data", "files", file.RealPath)
 	// Will replace the old file
@@ -78,6 +79,7 @@ func updateFile(upFile *multipart.FileHeader, user *models.User, folderID uuid.U
 	if err != nil {
 		err = ErrSave
 	}
+	user.UpdateStorage(user.UsedStorage - oldSize + file.Size)
 	return file, err
 }
 

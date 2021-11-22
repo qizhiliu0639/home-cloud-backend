@@ -55,6 +55,7 @@ func UploadFiles(c *gin.Context) {
 			}
 		}
 	}
+	// If entering uploading process, success will be always 0 and each file result will be in files array
 	c.JSON(http.StatusOK, gin.H{
 		"success": 0,
 		"files":   res,
