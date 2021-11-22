@@ -93,7 +93,22 @@ func GetFolder(c *gin.Context) {
 		}
 		c.JSON(status, gin.H{"success": 1, "message": GetErrorMessage(err)})
 	} else {
-		c.JSON(http.StatusOK, gin.H{"success": 0, "children": files})
+		var resFiles = make([]gin.H, len(files))
+		for i, v := range files {
+			resFiles[i] = gin.H{
+				"Name":      v.Name,
+				"IsDir":     v.IsDir,
+				"Position":  v.Position,
+				"Size":      v.Size,
+				"FileType":  v.FileType,
+				"UpdatedAt": v.UpdatedAt,
+				"CreatedAt": v.CreatedAt,
+				"CreatorId": GetUserNameByID(v.CreatorId),
+				"OwnerId":   GetUserNameByID(v.OwnerId),
+				"Favorite":  v.Favorite,
+			}
+		}
+		c.JSON(http.StatusOK, gin.H{"success": 0, "children": resFiles})
 	}
 }
 
@@ -195,15 +210,35 @@ func GetFileOrFolderInfoByPath(c *gin.Context) {
 		}
 		c.JSON(status, gin.H{"success": 1, "message": GetErrorMessage(err)})
 	} else {
+		resFolderInfo := gin.H{
+			"Name":     file.Name,
+			"Position": file.Position,
+		}
 		if file.IsDir == 1 {
-			c.JSON(http.StatusOK, gin.H{"success": 0, "type": "folder", "root": file.ParentId == uuid.Nil, "info": file})
+			c.JSON(http.StatusOK, gin.H{"success": 0, "type": "folder", "root": file.ParentId == uuid.Nil, "info": resFolderInfo})
 		} else {
 			var folder *models.File
 			folder, err = service.GetFileOrFolderInfoByID(file.ParentId, user)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"success": 1, "message": GetErrorMessage(err)})
 			} else {
-				c.JSON(http.StatusOK, gin.H{"success": 0, "type": "file", "info": file, "parent_root": file.ParentId == uuid.Nil, "parent_info": folder})
+				resFileInfo := gin.H{
+					"Name":      file.Name,
+					"Position":  file.Position,
+					"Size":      file.Size,
+					"FileType":  file.FileType,
+					"UpdatedAt": file.UpdatedAt,
+					"CreatedAt": file.CreatedAt,
+					"CreatorId": GetUserNameByID(file.CreatorId),
+					"OwnerId":   GetUserNameByID(file.OwnerId),
+					"Favorite":  file.Favorite,
+				}
+				resParentFolderInfo := gin.H{
+					"Name":     folder.Name,
+					"Position": folder.Position,
+				}
+
+				c.JSON(http.StatusOK, gin.H{"success": 0, "type": "file", "info": resFileInfo, "parent_root": file.ParentId == uuid.Nil, "parent_info": resParentFolderInfo})
 			}
 		}
 	}
