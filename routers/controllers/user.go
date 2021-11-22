@@ -25,6 +25,7 @@ func UserLogin(c *gin.Context) {
 
 	username := c.PostForm("username")
 	password := c.PostForm("password")
+	remember := c.PostForm("remember")
 
 	if len(username) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid username or password"})
@@ -34,6 +35,17 @@ func UserLogin(c *gin.Context) {
 	if service.LoginValidate(username, password) {
 		session := sessions.Default(c)
 		session.Set("user", username)
+		maxAge := 86400 * 30
+		if remember == "0" {
+			// maxAge=0 will delete cookie after browser close
+			maxAge = 0
+		}
+		session.Options(sessions.Options{
+			Path:     "/api",
+			HttpOnly: true,
+			MaxAge:   maxAge,
+			SameSite: http.SameSiteLaxMode,
+		})
 		if err := session.Save(); err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"success": 1, "message": "Save session error"})
 			return
@@ -49,6 +61,13 @@ func UserLogin(c *gin.Context) {
 func UserLogout(c *gin.Context) {
 	session := sessions.Default(c)
 	session.Delete("user")
+	session.Options(sessions.Options{
+		Path:     "/api",
+		HttpOnly: true,
+		// MaxAge=0 will delete cookie after browser close
+		MaxAge:   0,
+		SameSite: http.SameSiteLaxMode,
+	})
 	if err := session.Save(); err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": 1, "message": "Save session error"})
 	} else {
