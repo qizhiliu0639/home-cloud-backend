@@ -32,22 +32,29 @@ func InitRouter(router *gin.Engine) {
 		//Files API
 		fileAPI := api.Group("/file")
 		fileAPI.Use(middleware.AuthSession())
-		fileAPI.Use(middleware.ValidateDir())
 		{
-			//Upload file
-			fileAPI.POST("/upload", controllers.UploadFiles)
-			//Get child in folder (Use folder ID)
-			fileAPI.POST("/list_dir", controllers.GetFolder)
-			//New file or Folder
-			fileAPI.POST("/new", controllers.NewFileOrFolder)
+			dirGroup := fileAPI.Group("")
+			dirGroup.Use(middleware.ValidateDir())
+			{
+				//Upload file
+				dirGroup.POST("/upload", controllers.UploadFiles)
+				//Get child in folder (Use folder ID)
+				dirGroup.POST("/list_dir", controllers.GetFolder)
+				//New file or Folder
+				dirGroup.POST("/new", controllers.NewFileOrFolder)
 
-			fileAPI.POST("/get_info", controllers.GetFileOrFolderInfoByPath)
-			//Get file (Use file ID)
-			fileAPI.POST("/get_file", controllers.GetFile)
-			//delete file
-			fileAPI.POST("/delete", controllers.DeleteFile)
-			//Add favorite file
-			fileAPI.PUT("/favorite", controllers.DealWithFavorite)
+				dirGroup.POST("/get_info", controllers.GetFileOrFolderInfoByPath)
+				//Get file (Use file name)
+				dirGroup.POST("/get_file", controllers.GetFile)
+				//delete file
+				dirGroup.POST("/delete", controllers.DeleteFile)
+				//Add favorite file
+				dirGroup.PUT("/favorite", controllers.ToggleFavorite)
+			}
+			//Search file by keywords
+			fileAPI.POST("/search", controllers.SearchFiles)
+			//Get Favorites List
+			fileAPI.GET("/get_favorite", controllers.GetFavorites)
 		}
 		userAPI := api.Group("/user")
 		userAPI.Use(middleware.AuthSession())

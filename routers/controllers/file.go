@@ -280,7 +280,7 @@ func DeleteFile(c *gin.Context) {
 	}
 }
 
-func DealWithFavorite(c *gin.Context) {
+func ToggleFavorite(c *gin.Context) {
 	user := c.Value("user").(*models.User)
 	vDir := c.Value("vDir").([]string)
 
@@ -297,7 +297,6 @@ func DealWithFavorite(c *gin.Context) {
 		c.JSON(status, gin.H{"success": 1, "message": GetErrorMessage(err)})
 		return
 	}
-
 	err = service.ChangeFavoriteStatus(file, user)
 	if err != nil {
 		var status int
@@ -312,5 +311,61 @@ func DealWithFavorite(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, gin.H{"success": 0})
 	}
+}
 
+func GetFavorites(c *gin.Context) {
+	user := c.Value("user").(*models.User)
+
+	files, err := service.GetFavorites(user)
+	if err != nil {
+		var status int
+		if errors.Is(err, service.ErrInvalidOrPermission) {
+			status = http.StatusNotFound
+		} else if errors.Is(err, service.ErrSystem) {
+			status = http.StatusInternalServerError
+		} else {
+			status = http.StatusBadRequest
+		}
+		c.JSON(status, gin.H{"success": 1, "message": GetErrorMessage(err)})
+	} else {
+		resFileInfo := make([]gin.H, len(files))
+		for i, v := range files {
+			resFileInfo[i] = gin.H{
+				"Name":     v.Name,
+				"Position": v.Position,
+				"IsDir":    v.IsDir,
+			}
+		}
+		c.JSON(http.StatusOK, gin.H{"success": 0, "favorites": resFileInfo})
+	}
+}
+
+func SearchFiles(c *gin.Context) {
+	user := c.Value("user").(*models.User)
+	keyword := c.PostForm("keyword")
+	if keyword == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Please input keyword"})
+	}
+	files, err := service.SearchFiles(user, keyword)
+	if err != nil {
+		var status int
+		if errors.Is(err, service.ErrInvalidOrPermission) {
+			status = http.StatusNotFound
+		} else if errors.Is(err, service.ErrSystem) {
+			status = http.StatusInternalServerError
+		} else {
+			status = http.StatusBadRequest
+		}
+		c.JSON(status, gin.H{"success": 1, "message": GetErrorMessage(err)})
+	} else {
+		resFileInfo := make([]gin.H, len(files))
+		for i, v := range files {
+			resFileInfo[i] = gin.H{
+				"Name":     v.Name,
+				"Position": v.Position,
+				"IsDir":    v.IsDir,
+			}
+		}
+		c.JSON(http.StatusOK, gin.H{"success": 0, "result": resFileInfo})
+	}
 }

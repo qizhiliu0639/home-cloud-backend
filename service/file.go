@@ -275,3 +275,34 @@ func ChangeFavoriteStatus(file *models.File, user *models.User) (err error) {
 	}
 	return err
 }
+
+func GetFavorites(user *models.User) (files []*models.File, err error) {
+	files, err = user.FindFavorites()
+	if err != nil {
+		err = ErrSystem
+	}
+	for _, v := range files {
+		err = v.TraceRoot()
+		if err != nil {
+			err = ErrSystem
+			return
+		}
+	}
+	return
+}
+
+func SearchFiles(user *models.User, keyword string) (files []*models.File, err error) {
+	files, err = user.SearchFiles(keyword)
+	if err != nil {
+		err = ErrSystem
+		return
+	}
+	for _, v := range files {
+		err = v.TraceRoot()
+		if err != nil {
+			err = ErrSystem
+			return
+		}
+	}
+	return
+}

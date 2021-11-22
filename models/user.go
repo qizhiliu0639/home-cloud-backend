@@ -104,6 +104,29 @@ func (user *User) UpdateProfile(email string, nickName string, gender int, bio s
 	DB.Save(&user)
 }
 
+func (user *User) SearchFiles(keyword string) ([]*File, error) {
+	var files []*File
+	var err error
+	err = DB.Model(&File{}).Where(&File{OwnerId: user.ID}).
+		Where("name like ?", "%"+keyword+"%").
+		Find(&files).Error
+	if err != nil {
+		return nil, err
+	}
+	return files, nil
+}
+
+func (user *User) FindFavorites() ([]*File, error) {
+	var files []*File
+	var err error
+	err = DB.Model(&File{}).Where(&File{OwnerId: user.ID, Favorite: 1}).
+		Find(&files).Error
+	if err != nil {
+		return nil, err
+	}
+	return files, nil
+}
+
 func CheckAdminExist() bool {
 	var user User
 	err := DB.Where(&User{Status: 1}).First(&user).Error
