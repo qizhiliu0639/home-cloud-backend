@@ -8,17 +8,23 @@ import (
 
 type User struct {
 	gorm.Model
-	ID          uuid.UUID `gorm:"type:char(36);primaryKey;"`
-	Username    string    `gorm:"type:varchar(50);unique;not null"`
-	Nickname    string    `gorm:"type:varchar(50);not null"`
-	Email       string    `gorm:"type:varchar(50)"`
-	Password    string    `gorm:"size:128;not null"`
-	AccountSalt string    `gorm:"size:64;not null"`
-	MacSalt     string    `gorm:"size:64;not null"`
-	// 0 for user, 1 for admin, 2 for resetting password, 3 for resetting two-factor auth
-	// 4 for resetting both, 5 for disabled user, 6 for manager
-	Status  int    `gorm:"default:0;comment:'user status"`
+	ID       uuid.UUID `gorm:"type:char(36);primaryKey;"`
+	Username string    `gorm:"type:varchar(50);unique;not null"`
+	Nickname string    `gorm:"type:varchar(50);not null"`
+	Email    string    `gorm:"type:varchar(50)"`
+	// 0 for male, 1 for female, 2 for other
+	Gender      int    `gorm:"type:tinyint;default:0"`
+	Bio         string `gorm:"type:text;default:null"`
+	Password    string `gorm:"size:128;not null"`
+	AccountSalt string `gorm:"size:64;not null"`
+	MacSalt     string `gorm:"size:64;not null"`
+	// 0 for user, 1 for admin
+	Status  int    `gorm:"type:tinyint;default:0;comment:'user status"`
 	Storage uint64 `gorm:"default:10240;comment:'user Storage"`
+	// 0 for disable encryption, 1 for AES-256-GCM, 2 for ChaCha20-Poly1305, 3 for XChaCha20-Poly1305
+	Encryption    int    `gorm:"type:tinyint;default:0"`
+	EncryptionKey string `gorm:"size:64;default:null"`
+	Migration     int    `gorm:"type:tinyint;default:0"`
 }
 
 func (user *User) BeforeCreate(tx *gorm.DB) error {

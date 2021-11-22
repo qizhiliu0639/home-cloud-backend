@@ -14,22 +14,14 @@ type File struct {
 	//1 for folder and 0 for file
 	IsDir int    `gorm:"default:0;not null"`
 	Name  string `gorm:"type:varchar(191);not null;uniqueIndex:idx_only_one"`
-	//null for root folder
+	//uuid.null for root folder
 	ParentId  uuid.UUID `gorm:"type:char(36);not null;uniqueIndex:idx_only_one"`
 	OwnerId   uuid.UUID `gorm:"type:char(36);not null;uniqueIndex:idx_only_one"`
 	CreatorId uuid.UUID `gorm:"type:char(36);not null"`
 	Size      uint64    `gorm:"not null"`
-	//1 for special hidden file or folder, 0 for others
-	Status         int    `gorm:"default:0"`
-	Locked         int    `gorm:"default:0"`
-	Version        uint64 `gorm:"default:0"`
-	FileType       string `gorm:"default:'other'"`
-	RealPath       string `gorm:"not null"`
-	Thumbnail      uint64
-	SharedEnabled  int `gorm:"default:0"`
-	DownloadStatus int `gorm:"default:0"`
-	Encryption     int `gorm:"default:0"`
-	Favorite       int `gorm:"default:0"`
+	FileType  string    `gorm:"default:'other'"`
+	RealPath  string    `gorm:"not null"`
+	Favorite  int       `gorm:"default:0"`
 
 	// 数据库忽略字段
 	Position string `gorm:"-"`
