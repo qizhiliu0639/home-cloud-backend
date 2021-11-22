@@ -8,6 +8,7 @@ import (
 	"home-cloud/service"
 	"home-cloud/utils"
 	"net/http"
+	"strconv"
 )
 
 // UserPreLogin Frontend will request this before login to get the salt for PBKDF2
@@ -94,6 +95,47 @@ func UserRegister(c *gin.Context) {
 		}
 	} else {
 		c.JSON(http.StatusOK, gin.H{"success": 0})
+	}
+}
+
+// ChangePassword Change user password
+func ChangePassword(c *gin.Context) {
+	user := c.Value("user").(*models.User)
+	oldPassword := c.PostForm("old")
+	newPassword := c.PostForm("new")
+	newAccountSalt := c.PostForm("new_account_salt")
+	if service.LoginValidate(user.Username, oldPassword) {
+		service.ChangePassword(user, newAccountSalt, newPassword)
+		c.JSON(http.StatusOK, gin.H{"success": 0})
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Old Password Error!"})
+	}
+}
+
+// UpdateProfile Update user profile
+func UpdateProfile(c *gin.Context) {
+	user := c.Value("user").(*models.User)
+	email := c.PostForm("email")
+	nickName := c.PostForm("nickname")
+	g := c.PostForm("gender")
+	bio := c.PostForm("bio")
+	if g == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid Parameters!"})
+		return
+	} else {
+		gender, err := strconv.Atoi(g)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid Parameters!"})
+			return
+		}
+		err = service.UpdateProfile(user, email, nickName, gender, bio)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid Parameters!"})
+			return
+		} else {
+			c.JSON(http.StatusOK, gin.H{"success": 0})
+			return
+		}
 	}
 }
 

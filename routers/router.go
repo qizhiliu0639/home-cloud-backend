@@ -49,5 +49,11 @@ func InitRouter(router *gin.Engine) {
 			//Add favorite file
 			fileAPI.PUT("/favorite", controllers.DealWithFavorite)
 		}
+		userAPI := api.Group("/user")
+		userAPI.Use(middleware.AuthSession())
+		{
+			userAPI.PUT("/password", controllers.ChangePassword)
+			userAPI.POST("/profile", controllers.UpdateProfile)
+		}
 	}
 }

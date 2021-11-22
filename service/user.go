@@ -5,6 +5,7 @@ import (
 	"home-cloud/utils"
 	"os"
 	"path"
+	"strings"
 )
 
 func LoginGetSalt(username string) string {
@@ -62,6 +63,20 @@ func RegisterUser(username string, password string, accountSalt string) error {
 	} else {
 		return ErrUsernameInvalid
 	}
+}
+
+func ChangePassword(user *models.User, newAccountSalt string, newPassword string) {
+	newMacSalt := utils.GenerateSalt(256)
+	newPass := utils.GetHashWithSalt(newPassword, newMacSalt)
+	user.ChangePassword(newPass, newAccountSalt, newMacSalt)
+}
+
+func UpdateProfile(user *models.User, email string, nickName string, gender int, bio string) (err error) {
+	if gender < 0 || gender > 2 || !strings.Contains(email, "@") {
+		return ErrRequestPara
+	}
+	user.UpdateProfile(email, nickName, gender, bio)
+	return nil
 }
 
 func AddManageUserAuth(AdminUser *models.User, user *models.User) (err error) {

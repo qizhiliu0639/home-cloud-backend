@@ -84,6 +84,23 @@ func (user *User) RegisterUser() error {
 	return err
 }
 
+func (user *User) ChangePassword(newPass string, newAccountSalt string, newMacSalt string) {
+	utils.GetLogger().Warn("Change Password for " + user.Username)
+	user.Password = newPass
+	user.AccountSalt = newAccountSalt
+	user.MacSalt = newMacSalt
+	DB.Save(&user)
+}
+
+func (user *User) UpdateProfile(email string, nickName string, gender int, bio string) {
+	utils.GetLogger().Info("Update profile for user " + user.Username)
+	user.Email = email
+	user.Nickname = nickName
+	user.Gender = gender
+	user.Bio = bio
+	DB.Save(&user)
+}
+
 func CheckAdminExist() bool {
 	var user User
 	err := DB.Where(&User{Status: 1}).First(&user).Error

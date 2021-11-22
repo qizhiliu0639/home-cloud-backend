@@ -41,7 +41,7 @@ func CheckAdmin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user := c.Value("user").(*models.User)
 		if user.Status != 1 {
-			utils.GetLogger().Warning("User " + user.Username + " try to access admin page, rejected")
+			utils.GetLogger().Warn("User " + user.Username + " try to access admin page, rejected")
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"success": 1, "message": "Permission denied! "})
 		} else {
 			c.Next()
