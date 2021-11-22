@@ -18,12 +18,10 @@ func GetErrorMessage(err error) (res string) {
 		res = "Conflict in File Name or Folder Name"
 	case service.ErrSystem:
 		res = "System Error"
-	case service.ErrNotEnoughStorage:
-		res = "Not enough Storage"
 	case service.ErrFavorite:
-		res = "Errors in dealing with favorite"
+		res = "Errors in toggling Favorite Settings"
 	case service.ErrStorage:
-		res = "Errors in dealing with Storage"
+		res = "Errors in Storage Quota"
 	}
 	return
 }

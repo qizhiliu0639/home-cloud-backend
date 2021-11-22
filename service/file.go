@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
@@ -20,6 +19,9 @@ func UploadFile(upFile *multipart.FileHeader, user *models.User, folder *models.
 	if folder.IsDir != 1 {
 		return ErrRequestPara
 	}
+	if user.UsedStorage+uint64(upFile.Size) > user.Storage {
+		return ErrStorage
+	}
 	file := models.NewFile()
 	file.ID = uuid.New()
 	file.RealPath = file.ID.String()
@@ -30,17 +32,6 @@ func UploadFile(upFile *multipart.FileHeader, user *models.User, folder *models.
 	file.Size = uint64(upFile.Size)
 	file.ParentId = folder.ID
 	file.FileType = utils.GetFileTypeByName(file.Name)
-
-	fmt.Println("file size", file.Size)
-	fmt.Println("user.Storage", user.Storage)
-	if user.Storage < file.Size {
-		fmt.Println("not enough storage")
-		return ErrNotEnoughStorage
-	} else {
-		if err = user.UpdateStorage(user.Storage - file.Size); err != nil {
-			return ErrStorage
-		}
-	}
 
 	dst := path.Join(utils.GetConfig().UserDataPath, user.ID.String(),
 		"data", "files", file.RealPath)
@@ -54,7 +45,7 @@ func UploadFile(upFile *multipart.FileHeader, user *models.User, folder *models.
 		var mysqlErr *mysql.MySQLError
 		if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
 			// Duplicate entry error, try to update file
-			file, err = updateFile(upFile, user, folder.ID)
+			file, err = updateFile(upFile, user, folder.ID, dst)
 			if err != nil {
 				return err
 			}
@@ -62,17 +53,25 @@ func UploadFile(upFile *multipart.FileHeader, user *models.User, folder *models.
 			return ErrSave
 		}
 	}
+	user.UpdateStorage(user.UsedStorage + uint64(upFile.Size))
 	return nil
 }
 
 //Update files when detected duplicate entry in uploading process
-func updateFile(upFile *multipart.FileHeader, user *models.User, folderID uuid.UUID) (*models.File, error) {
+func updateFile(upFile *multipart.FileHeader, user *models.User, folderID uuid.UUID, newFilePath string) (*models.File, error) {
 	file, err := models.GetFileByName(upFile.Filename, user, folderID)
 	if err != nil {
 		return nil, ErrFoundFile
 	}
 	if file.IsDir == 1 {
 		return nil, ErrConflict
+	}
+	oldFilePath := path.Join(utils.GetConfig().UserDataPath, user.ID.String(),
+		"data", "files", file.RealPath)
+	// Will replace the old file
+	err = os.Rename(newFilePath, oldFilePath)
+	if err != nil {
+		return nil, ErrSystem
 	}
 	file.Size = uint64(upFile.Size)
 	err = file.UpdateFile()
@@ -120,6 +119,7 @@ func NewFileOrFolder(folder *models.File, user *models.User, newName string, t s
 	file.Name = newName
 	file.OwnerId = user.ID
 	file.CreatorId = user.ID
+	// new file or folder size will be always 0, no need to update UsedStorage
 	file.Size = 0
 	file.ParentId = folder.ID
 	if file.IsDir == 0 {
@@ -218,9 +218,6 @@ func DeleteFile(file *models.File, user *models.User) (err error) {
 		err = ErrInvalidOrPermission
 		return
 	}
-	if err = user.UpdateStorage(user.Storage + file.Size); err != nil {
-		return ErrStorage
-	}
 	//Will not raise error
 	DeleteFileRecursively(file, user)
 	return nil
@@ -239,6 +236,9 @@ func DeleteFileRecursively(file *models.File, user *models.User) {
 			if err == nil {
 				deleteQueue = append(deleteQueue, child...)
 			}
+		} else {
+			// Reduce used storage
+			user.UpdateStorage(user.UsedStorage - root.Size)
 		}
 		root.DeleteFile()
 		dst := path.Join(utils.GetConfig().UserDataPath, user.ID.String(),

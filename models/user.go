@@ -19,8 +19,11 @@ type User struct {
 	AccountSalt string `gorm:"size:64;not null"`
 	MacSalt     string `gorm:"size:64;not null"`
 	// 0 for user, 1 for admin
-	Status  int    `gorm:"type:tinyint;default:0;comment:'user status"`
-	Storage uint64 `gorm:"default:10240;comment:'user Storage"`
+	Status int `gorm:"type:tinyint;default:0;comment:'user status"`
+	// default 1G quota
+	Storage uint64 `gorm:"default:1073741824;comment:'user Storage"`
+	// Used storage
+	UsedStorage uint64 `gorm:"default:0;comment:'user Storage"`
 	// 0 for disable encryption, 1 for AES-256-GCM, 2 for ChaCha20-Poly1305, 3 for XChaCha20-Poly1305
 	Encryption    int    `gorm:"type:tinyint;default:0"`
 	EncryptionKey string `gorm:"size:64;default:null"`
@@ -122,13 +125,13 @@ func InitAdminUser() error {
 		"629eb9cf8c2982aa8b77283be3b7c1087b6a5ffeea32f9f11ac9be958287d79a",
 		adminUser.MacSalt)
 	adminUser.Status = 1
-	adminUser.Storage = 100
 	err := adminUser.RegisterUser()
 	return err
 }
 
-func (user *User) UpdateStorage(newSize uint64) error {
-	return DB.Model(&user).Update("storage", newSize).Error
+func (user *User) UpdateStorage(newSize uint64) {
+	user.UsedStorage = newSize
+	DB.Save(user)
 }
 
 func (user *User) AddMangerUserAuth() error {

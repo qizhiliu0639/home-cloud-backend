@@ -18,7 +18,7 @@ type File struct {
 	ParentId  uuid.UUID `gorm:"type:char(36);not null;uniqueIndex:idx_only_one"`
 	OwnerId   uuid.UUID `gorm:"type:char(36);not null;uniqueIndex:idx_only_one"`
 	CreatorId uuid.UUID `gorm:"type:char(36);not null"`
-	Size      uint64    `gorm:"not null"`
+	Size      uint64    `gorm:"default:0;not null"`
 	FileType  string    `gorm:"default:'other'"`
 	RealPath  string    `gorm:"not null"`
 	Favorite  int       `gorm:"default:0"`

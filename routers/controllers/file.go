@@ -36,7 +36,6 @@ func UploadFiles(c *gin.Context) {
 	}
 
 	res := make(map[string]interface{})
-	success := false
 	for _, file := range files {
 		if len(file.Filename) == 0 || strings.ContainsAny(file.Filename, "/?*|<>:\\") {
 			res[file.Filename] = gin.H{
@@ -50,25 +49,16 @@ func UploadFiles(c *gin.Context) {
 					"message": GetErrorMessage(err),
 				}
 			} else {
-				success = true
 				res[file.Filename] = gin.H{
 					"result": true,
 				}
 			}
 		}
 	}
-	if success {
-		c.JSON(http.StatusOK, gin.H{
-			"success": 0,
-			"files":   res,
-		})
-	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"success": 1,
-			"files":   res,
-		})
-	}
-
+	c.JSON(http.StatusOK, gin.H{
+		"success": 0,
+		"files":   res,
+	})
 }
 
 func GetFolder(c *gin.Context) {
