@@ -127,31 +127,6 @@ func (user *User) FindFavorites() ([]*File, error) {
 	return files, nil
 }
 
-func CheckAdminExist() bool {
-	var user User
-	err := DB.Where(&User{Status: 1}).First(&user).Error
-	if err != nil {
-		return false
-	} else {
-		return true
-	}
-}
-
-func InitAdminUser() error {
-	adminUser := NewUser()
-	adminUser.ID = uuid.New()
-	adminUser.Username = "admin"
-	adminUser.Nickname = "admin"
-	adminUser.AccountSalt = "xq5QG7=2Q+__Ms5LQUsctP4+bh3!TPt4FoQ2Khx(pE~(tEA0_gChkj^hBaeIlPT="
-	adminUser.MacSalt = utils.GenerateSalt()
-	adminUser.Password = utils.GetHashWithSalt(
-		"629eb9cf8c2982aa8b77283be3b7c1087b6a5ffeea32f9f11ac9be958287d79a",
-		adminUser.MacSalt)
-	adminUser.Status = 1
-	err := adminUser.RegisterUser()
-	return err
-}
-
 func (user *User) UpdateUsedStorage(newSize uint64) {
 	user.UsedStorage = newSize
 	DB.Save(user)

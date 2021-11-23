@@ -6,8 +6,7 @@ import (
 	"sync"
 )
 
-type config struct {
-	LogFilePath  string `json:"log_file_path"`
+type Config struct {
 	UserDataPath string `json:"user_data_path"`
 	DBHost       string `json:"db_host"`
 	DBPort       string `json:"db_port"`
@@ -16,19 +15,31 @@ type config struct {
 	DBName       string `json:"db_name"`
 }
 
-var globalConfig *config
+var globalConfig *Config
 var configOnce sync.Once
 
 func loadConfig() {
 	jsonFile, err := ioutil.ReadFile("config.json")
 	if err != nil {
-		//Todo Add default Config
-		return
+		panic("Read config.json error. Please try to remove it or check the permission. ")
 	}
-	_ = json.Unmarshal(jsonFile, &globalConfig)
+	err = json.Unmarshal(jsonFile, &globalConfig)
+	if err != nil {
+		panic("Parse config.json error: " + err.Error() +
+			" Please remove it and run again to generate a new one. ")
+	}
+	if globalConfig.UserDataPath == "" ||
+		globalConfig.DBHost == "" ||
+		globalConfig.DBPort == "" ||
+		globalConfig.DBUser == "" ||
+		globalConfig.DBPassword == "" ||
+		globalConfig.DBName == "" {
+		panic("Parse config.json error: missing some required fields. " +
+			"Please check the file or generate a new one by removing it and running again. ")
+	}
 }
 
-func GetConfig() *config {
+func GetConfig() *Config {
 	configOnce.Do(loadConfig)
 	return globalConfig
 }

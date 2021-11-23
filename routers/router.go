@@ -6,11 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"home-cloud/middleware"
 	"home-cloud/routers/controllers"
+	"home-cloud/utils"
 )
 
 func InitRouter(router *gin.Engine) {
-	store := cookie.NewStore([]byte("bacsadhkwqidh23@#$@#CA*Y(qada213411qwfe23!@$!R!@CASasdh1212CQAWF"),
-		[]byte("akckq3213QWE!@EW!ESVGFQrqfaw23QW")) //cookie secret
+	store := cookie.NewStore([]byte(utils.GenerateSalt()), []byte(utils.GenerateSalt()[:32])) //cookie secret
 	router.Use(sessions.Sessions("home-cloud-backend-session", store))
 
 	api := router.Group("/api")

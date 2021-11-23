@@ -3,8 +3,8 @@ package main
 import (
 	"embed"
 	"github.com/gin-gonic/gin"
+	"home-cloud/bootstrap"
 	"home-cloud/middleware"
-	"home-cloud/models"
 	"home-cloud/routers"
 )
 
@@ -12,7 +12,7 @@ import (
 var frontendFS embed.FS
 
 func main() {
-	models.InitDatabase()
+	bootstrap.BootStrap()
 	router := gin.Default()
 	router.Use(middleware.FrontendFileHandler(frontendFS, "web/build"))
 	routers.InitRouter(router)

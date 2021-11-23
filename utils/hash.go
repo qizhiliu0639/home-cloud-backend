@@ -55,3 +55,17 @@ func GeneratePasswordInfo() (newPassword string, newAccountSalt string, newMacSa
 	newSavePassword = GetHashWithSalt(newAuthKey, newMacSalt)
 	return
 }
+
+func GeneratePasswordInfoFromPassword(newPassword string) (newAccountSalt string, newMacSalt string, newSavePassword string, err error) {
+	newAccountSalt = GenerateSalt()
+	newMacSalt = GenerateSalt()
+	newMasterKey := pbkdf2.Key([]byte(newPassword), []byte(newAccountSalt), 1000, 64, sha512.New)
+	hkdfReader := hkdf.New(sha512.New, newMasterKey, []byte{}, []byte("HOME-CLOUD-AUTH-KEY-FOR-LOGIN"))
+	newAuth := make([]byte, 32)
+	if _, err = io.ReadFull(hkdfReader, newAuth); err != nil {
+		return
+	}
+	newAuthKey := hex.EncodeToString(newAuth)
+	newSavePassword = GetHashWithSalt(newAuthKey, newMacSalt)
+	return
+}
