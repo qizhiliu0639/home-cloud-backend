@@ -152,15 +152,45 @@ func InitAdminUser() error {
 	return err
 }
 
-func (user *User) UpdateStorage(newSize uint64) {
+func (user *User) UpdateUsedStorage(newSize uint64) {
 	user.UsedStorage = newSize
 	DB.Save(user)
 }
 
-func (user *User) AddMangerUserAuth() error {
-	return DB.Model(&user).Update("status", 6).Error
+func (user *User) SetStorageQuota(newSize uint64) {
+	user.Storage = newSize
+	DB.Save(user)
 }
 
-func (user *User) CancelMangerUserAuth() error {
-	return DB.Model(&user).Update("status", 0).Error
+func (user *User) SetAsAdmin() {
+	user.Status = 1
+	DB.Save(user)
+}
+
+func (user *User) SetAsNormalUser() {
+	user.Status = 0
+	DB.Save(user)
+}
+
+func (user *User) DeleteUser() {
+	DB.Unscoped().Delete(user)
+}
+
+// GetUserList will not include the user who called this method
+func (user *User) GetUserList() (users []*User, err error) {
+	err = DB.Not(&User{ID: user.ID}).Order("status desc").Order("username").Find(&users).Error
+	return
+}
+
+// GetAdminCount count admin
+func GetAdminCount() (count int64) {
+	DB.Model(&User{}).Where(&User{Status: 1}).Count(&count)
+	return
+}
+
+func (user *User) SetPassword(newPass string, newAccountSalt string, newMacSalt string) {
+	user.Password = newPass
+	user.AccountSalt = newAccountSalt
+	user.MacSalt = newMacSalt
+	DB.Save(user)
 }

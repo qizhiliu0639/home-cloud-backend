@@ -22,6 +22,10 @@ func GetErrorMessage(err error) (res string) {
 		res = "Errors in toggling Favorite Settings"
 	case service.ErrStorage:
 		res = "Errors in Storage Quota"
+	case service.ErrOnlyAdmin:
+		res = "You need at least one admin user"
+	case service.ErrResetForbidden:
+		res = "Cannot reset password for users enabling encryption"
 	}
 	return
 }

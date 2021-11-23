@@ -5,6 +5,9 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/hex"
+	"golang.org/x/crypto/hkdf"
+	"golang.org/x/crypto/pbkdf2"
+	"io"
 )
 
 func GetHash(str string) string {
@@ -32,4 +35,23 @@ func GenerateSalt() string {
 func GenerateFakeSalt(username string) string {
 	hash := sha256.Sum256(append([]byte(username), []byte("FQMMWDqwsdq@!234DFQAWASCASEDQOAOS@#$#)T!$(@#")...))
 	return hex.EncodeToString(hash[:])
+}
+
+func GeneratePasswordInfo() (newPassword string, newAccountSalt string, newMacSalt string, newSavePassword string, err error) {
+	newPass := make([]byte, 4)
+	if _, err = rand.Read(newPass); err != nil {
+		return
+	}
+	newPassword = hex.EncodeToString(newPass)
+	newAccountSalt = GenerateSalt()
+	newMacSalt = GenerateSalt()
+	newMasterKey := pbkdf2.Key([]byte(newPassword), []byte(newAccountSalt), 1000, 64, sha512.New)
+	hkdfReader := hkdf.New(sha512.New, newMasterKey, []byte{}, []byte("HOME-CLOUD-AUTH-KEY-FOR-LOGIN"))
+	newAuth := make([]byte, 32)
+	if _, err = io.ReadFull(hkdfReader, newAuth); err != nil {
+		return
+	}
+	newAuthKey := hex.EncodeToString(newAuth)
+	newSavePassword = GetHashWithSalt(newAuthKey, newMacSalt)
+	return
 }

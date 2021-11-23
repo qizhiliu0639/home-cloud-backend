@@ -103,8 +103,8 @@ func GetFolder(c *gin.Context) {
 				"FileType":  v.FileType,
 				"UpdatedAt": v.UpdatedAt,
 				"CreatedAt": v.CreatedAt,
-				"CreatorId": GetUserNameByID(v.CreatorId),
-				"OwnerId":   GetUserNameByID(v.OwnerId),
+				"CreatorId": service.GetUserNameByID(v.CreatorId),
+				"OwnerId":   service.GetUserNameByID(v.OwnerId),
 				"Favorite":  v.Favorite,
 			}
 		}
@@ -229,8 +229,8 @@ func GetFileOrFolderInfoByPath(c *gin.Context) {
 					"FileType":  file.FileType,
 					"UpdatedAt": file.UpdatedAt,
 					"CreatedAt": file.CreatedAt,
-					"CreatorId": GetUserNameByID(file.CreatorId),
-					"OwnerId":   GetUserNameByID(file.OwnerId),
+					"CreatorId": service.GetUserNameByID(file.CreatorId),
+					"OwnerId":   service.GetUserNameByID(file.OwnerId),
 					"Favorite":  file.Favorite,
 				}
 				resParentFolderInfo := gin.H{

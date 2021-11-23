@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"home-cloud/models"
 	"home-cloud/service"
 	"home-cloud/utils"
@@ -137,15 +136,6 @@ func UpdateProfile(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"success": 0})
 			return
 		}
-	}
-}
-
-// GetUserNameByID get username by id, return empty string if error
-func GetUserNameByID(uid uuid.UUID) string {
-	if user, err := models.GetUserByID(uid); err != nil {
-		return ""
-	} else {
-		return user.Username
 	}
 }
 

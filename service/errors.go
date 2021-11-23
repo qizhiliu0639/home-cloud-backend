@@ -13,5 +13,6 @@ var (
 	ErrUsernameInvalid     = errors.New("username unavailable")
 	ErrFavorite            = errors.New("error when toggling favorite setting")
 	ErrStorage             = errors.New("no enough storage quota")
-	ErrInvalidAuth         = errors.New("this account has no authorization")
+	ErrOnlyAdmin           = errors.New("need at least one admin")
+	ErrResetForbidden      = errors.New("cannot reset password for user enabling encryption")
 )

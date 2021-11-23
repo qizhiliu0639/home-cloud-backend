@@ -53,7 +53,7 @@ func UploadFile(upFile *multipart.FileHeader, user *models.User, folder *models.
 			return ErrSave
 		}
 	}
-	user.UpdateStorage(user.UsedStorage + uint64(upFile.Size))
+	user.UpdateUsedStorage(user.UsedStorage + uint64(upFile.Size))
 	return nil
 }
 
@@ -79,7 +79,7 @@ func updateFile(upFile *multipart.FileHeader, user *models.User, folderID uuid.U
 	if err != nil {
 		err = ErrSave
 	}
-	user.UpdateStorage(user.UsedStorage - oldSize + file.Size)
+	user.UpdateUsedStorage(user.UsedStorage - oldSize + file.Size)
 	return file, err
 }
 
@@ -240,7 +240,7 @@ func DeleteFileRecursively(file *models.File, user *models.User) {
 			}
 		} else {
 			// Reduce used storage
-			user.UpdateStorage(user.UsedStorage - root.Size)
+			user.UpdateUsedStorage(user.UsedStorage - root.Size)
 		}
 		root.DeleteFile()
 		dst := path.Join(utils.GetConfig().UserDataPath, user.ID.String(),

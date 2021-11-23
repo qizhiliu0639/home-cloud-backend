@@ -62,5 +62,16 @@ func InitRouter(router *gin.Engine) {
 			userAPI.PUT("/password", controllers.ChangePassword)
 			userAPI.POST("/profile", controllers.UpdateProfile)
 		}
+
+		adminAPI := api.Group("/admin")
+		adminAPI.Use(middleware.AuthSession())
+		adminAPI.Use(middleware.CheckAdmin())
+		{
+			adminAPI.GET("/get_users", controllers.GetUserList)
+			adminAPI.POST("/delete_user", controllers.DeleteUser)
+			adminAPI.POST("/set_user_quota", controllers.SetUserQuota)
+			adminAPI.POST("/toggle_admin", controllers.ToggleAdmin)
+			adminAPI.POST("/reset_password", controllers.ResetUserPassword)
+		}
 	}
 }
