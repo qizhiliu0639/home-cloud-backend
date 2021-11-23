@@ -143,7 +143,7 @@ func InitAdminUser() error {
 	adminUser.Username = "admin"
 	adminUser.Nickname = "admin"
 	adminUser.AccountSalt = "xq5QG7=2Q+__Ms5LQUsctP4+bh3!TPt4FoQ2Khx(pE~(tEA0_gChkj^hBaeIlPT="
-	adminUser.MacSalt = utils.GenerateSalt(256)
+	adminUser.MacSalt = utils.GenerateSalt()
 	adminUser.Password = utils.GetHashWithSalt(
 		"629eb9cf8c2982aa8b77283be3b7c1087b6a5ffeea32f9f11ac9be958287d79a",
 		adminUser.MacSalt)

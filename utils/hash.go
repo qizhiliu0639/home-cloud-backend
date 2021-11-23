@@ -2,6 +2,7 @@ package utils
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/hex"
 )
@@ -16,29 +17,19 @@ func GetHashWithSalt(str string, salt string) string {
 	return hex.EncodeToString(hash[:])
 }
 
-func GenerateSalt(length int) string {
-	chars := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890~!@#$%^&*()_+=-/"
-	charLength := len(chars)
-	length = length / 4
+func GenerateSalt() string {
+	// 256-bit salt
+	length := 32
 	salt := make([]byte, length)
 	if _, err := rand.Read(salt); err != nil {
 		//default salt
-		GetLogger().Error("Generate salt error, fallback to use default 128-bit salt")
-		return "bjkqjbQWDQ123VWQacaPqlpMokthwCAS"
+		GetLogger().Error("Generate salt error, fallback to use default 256-bit salt")
+		return "166845ab354965a468de3bce654f1199294812bbddcceed46986bcbc7823ccad"
 	}
-	for i := 0; i < length; i++ {
-		salt[i] = chars[int(salt[i])%charLength]
-	}
-	return string(salt)
+	return hex.EncodeToString(salt[:])
 }
 
 func GenerateFakeSalt(username string) string {
-	chars := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890~!@#$%^&*()_+=-/"
-	charLength := len(chars)
-	hash := sha512.Sum512(append([]byte(username), []byte("FQWQWDqwsdq@!234DFQAWASCASEDQOAOS@#$#)T!$(@#")...))
-	salt := hash[:]
-	for i := 0; i < len(salt); i++ {
-		salt[i] = chars[int(salt[i])%charLength]
-	}
-	return string(salt)
+	hash := sha256.Sum256(append([]byte(username), []byte("FQMMWDqwsdq@!234DFQAWASCASEDQOAOS@#$#)T!$(@#")...))
+	return hex.EncodeToString(hash[:])
 }

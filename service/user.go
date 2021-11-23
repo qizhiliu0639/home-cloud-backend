@@ -32,7 +32,7 @@ func RegisterUser(username string, password string, accountSalt string) error {
 		user := models.NewUser()
 		user.Username = username
 		user.AccountSalt = accountSalt
-		macSalt := utils.GenerateSalt(256)
+		macSalt := utils.GenerateSalt()
 		user.MacSalt = macSalt
 		user.Password = utils.GetHashWithSalt(password, macSalt)
 		user.Nickname = username
@@ -66,7 +66,7 @@ func RegisterUser(username string, password string, accountSalt string) error {
 }
 
 func ChangePassword(user *models.User, newAccountSalt string, newPassword string) {
-	newMacSalt := utils.GenerateSalt(256)
+	newMacSalt := utils.GenerateSalt()
 	newPass := utils.GetHashWithSalt(newPassword, newMacSalt)
 	user.ChangePassword(newPass, newAccountSalt, newMacSalt)
 }
