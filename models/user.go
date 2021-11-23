@@ -82,7 +82,7 @@ func (user *User) RegisterUser() error {
 	rootFolder.OwnerId = user.ID
 	rootFolder.CreatorId = user.ID
 	rootFolder.IsDir = 1
-	rootFolder.Name = "Home"
+	rootFolder.Name = user.Username
 	err = rootFolder.CreateFile()
 	return err
 }

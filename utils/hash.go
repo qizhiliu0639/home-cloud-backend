@@ -10,13 +10,18 @@ import (
 	"io"
 )
 
-func GetHash(str string) string {
-	hash := sha512.Sum512([]byte(str))
-	return hex.EncodeToString(hash[:])
-}
-
+// GetHashWithSalt Assume str and salt are encoded to hex, if not will return empty string (will not match)
 func GetHashWithSalt(str string, salt string) string {
-	hash := sha512.Sum512(append([]byte(str), []byte(salt)...))
+	strBytes, err := hex.DecodeString(str)
+	if err != nil {
+		return ""
+	}
+	var saltBytes []byte
+	saltBytes, err = hex.DecodeString(salt)
+	if err != nil {
+		return ""
+	}
+	hash := sha512.Sum512(append(strBytes, saltBytes...))
 	return hex.EncodeToString(hash[:])
 }
 
@@ -37,6 +42,9 @@ func GenerateFakeSalt(username string) string {
 	return hex.EncodeToString(hash[:])
 }
 
+// GeneratePasswordInfo Generate authentication information for a new account
+// newAccountSalt is encoded in hex and decoded directly
+// because of compatibility with frontend salt generation
 func GeneratePasswordInfo() (newPassword string, newAccountSalt string, newMacSalt string, newSavePassword string, err error) {
 	newPass := make([]byte, 4)
 	if _, err = rand.Read(newPass); err != nil {
@@ -56,6 +64,9 @@ func GeneratePasswordInfo() (newPassword string, newAccountSalt string, newMacSa
 	return
 }
 
+// GeneratePasswordInfoFromPassword Generate authentication information for account with provided password
+// newAccountSalt is encoded in hex and decoded directly
+// because of compatibility with frontend salt generation
 func GeneratePasswordInfoFromPassword(newPassword string) (newAccountSalt string, newMacSalt string, newSavePassword string, err error) {
 	newAccountSalt = GenerateSalt()
 	newMacSalt = GenerateSalt()

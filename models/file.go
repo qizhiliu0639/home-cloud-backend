@@ -16,7 +16,7 @@ type File struct {
 	Name  string `gorm:"type:varchar(191);not null;uniqueIndex:idx_only_one"`
 	//uuid.null for root folder
 	ParentId  uuid.UUID `gorm:"type:char(36);not null;uniqueIndex:idx_only_one"`
-	OwnerId   uuid.UUID `gorm:"type:char(36);not null;uniqueIndex:idx_only_one"`
+	OwnerId   uuid.UUID `gorm:"type:char(36);not null"`
 	CreatorId uuid.UUID `gorm:"type:char(36);not null"`
 	Size      uint64    `gorm:"default:0;not null"`
 	FileType  string    `gorm:"default:'other'"`
