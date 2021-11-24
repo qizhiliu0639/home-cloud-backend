@@ -2,10 +2,12 @@ package bootstrap
 
 import (
 	"encoding/json"
+	"fmt"
 	"home-cloud/models"
 	"home-cloud/utils"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 // BootStrap check config file and perform init operations before running
@@ -13,17 +15,44 @@ import (
 func BootStrap() {
 	configFile, err := os.Stat("config.json")
 	if err != nil {
-		initConfigJson()
-		panic(
-			"Find config.json error:" + err.Error() +
-				" We have generated an example. " +
-				"Please change the fields in config.json and run again",
-		)
+		// If it is a file not exist error, create the template file
+		if os.IsNotExist(err) {
+			initConfigJson()
+			fmt.Println(
+				"Find config.json error. " +
+					"We have generated an example with following default settings. " +
+					"You can choose NO to modify these settings.",
+			)
+			fmt.Println()
+			fmt.Println("User Data Path: ./data")
+			fmt.Println("Mysql Host: 127.0.0.1")
+			fmt.Println("Mysql Port: 3306")
+			fmt.Println("Mysql Username: root")
+			fmt.Println("Mysql Password: root")
+			fmt.Println("Mysql Database Name: homecloud")
+			var input string
+			for {
+				fmt.Print("Do you want to continue? [Y/n] ")
+				_, err = fmt.Scanln(&input)
+				if err != nil {
+					panic("User input error: " + err.Error())
+				} else {
+					input = strings.ToLower(input)
+					if input == "y" {
+						break
+					} else if input == "n" {
+						os.Exit(0)
+					}
+				}
+			}
+		} else {
+			panic("Read config file error: " + err.Error())
+		}
+	} else {
+		if configFile.IsDir() {
+			panic("Please remove the config.json directory before running")
+		}
 	}
-	if configFile.IsDir() {
-		panic("Please remove the config.json directory before running")
-	}
-
 	models.InitDatabase()
 }
 

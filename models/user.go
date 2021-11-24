@@ -71,7 +71,6 @@ func NewUser() *User {
 }
 
 func (user *User) RegisterUser() error {
-	utils.GetLogger().Info(user.Status)
 	err := DB.Create(user).Error
 	if err != nil {
 		return err

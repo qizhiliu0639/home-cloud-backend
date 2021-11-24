@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/google/uuid"
 	"gorm.io/driver/mysql"
@@ -14,6 +15,7 @@ var DB *gorm.DB
 
 func InitDatabase() {
 	config := utils.GetConfig()
+	CreateDatabaseIfNotExist(config)
 	dsn := fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		config.DBUser,
 		config.DBPassword,
@@ -31,6 +33,30 @@ func InitDatabase() {
 	Migration()
 }
 
+func CreateDatabaseIfNotExist(config *utils.Config) {
+	dsn := fmt.Sprintf("%s:%s@(%s:%s)/?charset=utf8mb4&parseTime=True&loc=Local",
+		config.DBUser,
+		config.DBPassword,
+		config.DBHost,
+		config.DBPort,
+	)
+	db, err := gorm.Open(mysql.Open(dsn))
+	if err != nil {
+		panic("Failed to connect to the database: " + err.Error())
+	}
+	db.Exec("CREATE DATABASE IF NOT EXISTS " + config.DBName + ";")
+	var sqlDB *sql.DB
+	sqlDB, err = db.DB()
+	if err != nil {
+		panic("Failed to connect to the databases: " + err.Error())
+	} else {
+		err = sqlDB.Close()
+		if err != nil {
+			panic("Close connection to the databases error: " + err.Error())
+		}
+	}
+}
+
 func Migration() {
 	err := os.MkdirAll(utils.GetConfig().UserDataPath, 0644)
 	if err != nil {
@@ -41,7 +67,7 @@ func Migration() {
 		panic("Migrate tables error: " + err.Error())
 	}
 	if !CheckAdminExist() {
-		utils.GetLogger().Info("No admin user, create one......")
+		fmt.Println("No admin user, create one......")
 		if err = InitAdminUser(); err != nil {
 			panic("Create admin user error: " + err.Error())
 		}
