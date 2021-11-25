@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// GetFileTypeByName map extension to its type
 func GetFileTypeByName(name string) (fileType string) {
 	switch strings.ToLower(filepath.Ext(name)) {
 	case ".py":

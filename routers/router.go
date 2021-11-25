@@ -10,7 +10,7 @@ import (
 )
 
 func InitRouter(router *gin.Engine) {
-	store := cookie.NewStore([]byte(utils.GenerateSalt()), []byte(utils.GenerateSalt()[:32])) //cookie secret
+	store := cookie.NewStore([]byte(utils.GenerateSaltOrKey()), []byte(utils.GenerateSaltOrKey()[:32])) //cookie secret
 	router.Use(sessions.Sessions("home-cloud-backend-session", store))
 
 	api := router.Group("/api")

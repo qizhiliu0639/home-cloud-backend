@@ -12,6 +12,7 @@ import (
 	"path"
 )
 
+// UploadFile upload file to the folder
 func UploadFile(upFile *multipart.FileHeader, user *models.User, folder *models.File, c *gin.Context) (err error) {
 	if folder.OwnerId != user.ID {
 		return ErrInvalidOrPermission
@@ -83,6 +84,7 @@ func updateFile(upFile *multipart.FileHeader, user *models.User, folderID uuid.U
 	return file, err
 }
 
+// GetFolder return children in the folder
 func GetFolder(folder *models.File, user *models.User) (files []*models.File, err error) {
 	if folder.IsDir != 1 {
 		return nil, ErrRequestPara
@@ -101,6 +103,7 @@ func GetFolder(folder *models.File, user *models.User) (files []*models.File, er
 	return files, err
 }
 
+// NewFileOrFolder create a file or a folder in the current folder
 func NewFileOrFolder(folder *models.File, user *models.User, newName string, t string) (err error) {
 	if folder.OwnerId != user.ID {
 		return ErrInvalidOrPermission
@@ -157,6 +160,7 @@ func NewFileOrFolder(folder *models.File, user *models.User, newName string, t s
 	return nil
 }
 
+// GetFile return path pointed to requested file in the user data folder
 func GetFile(file *models.File, user *models.User) (dst, filename string, err error) {
 	if file.OwnerId != user.ID {
 		err = ErrInvalidOrPermission
@@ -172,6 +176,7 @@ func GetFile(file *models.File, user *models.User) (dst, filename string, err er
 	return
 }
 
+// GetFileOrFolderInfoByPath return file or folder
 func GetFileOrFolderInfoByPath(paths []string, user *models.User) (*models.File, error) {
 	rootFolder, err := user.GetRootFolder()
 	if err != nil {
@@ -200,6 +205,7 @@ func GetFileOrFolderInfoByPath(paths []string, user *models.User) (*models.File,
 	return file, nil
 }
 
+// GetFileOrFolderInfoByID return file or folder
 func GetFileOrFolderInfoByID(vFileID uuid.UUID, user *models.User) (*models.File, error) {
 	file, err := models.GetFileByID(vFileID)
 	if err != nil {
@@ -215,6 +221,7 @@ func GetFileOrFolderInfoByID(vFileID uuid.UUID, user *models.User) (*models.File
 	return file, nil
 }
 
+// DeleteFile delete a folder or file
 func DeleteFile(file *models.File, user *models.User) (err error) {
 	if file.OwnerId != user.ID {
 		err = ErrInvalidOrPermission
@@ -225,6 +232,7 @@ func DeleteFile(file *models.File, user *models.User) (err error) {
 	return nil
 }
 
+// DeleteFileRecursively help to delete a file or folder recursively
 func DeleteFileRecursively(file *models.File, user *models.User) {
 	deleteQueue := []*models.File{file}
 	//Max 65536 level
@@ -260,6 +268,7 @@ func DeleteFileRecursively(file *models.File, user *models.User) {
 	}
 }
 
+// ChangeFavoriteStatus change the favorite setting in the system
 func ChangeFavoriteStatus(file *models.File, user *models.User) (err error) {
 	if file.OwnerId != user.ID {
 		err = ErrInvalidOrPermission
@@ -276,6 +285,7 @@ func ChangeFavoriteStatus(file *models.File, user *models.User) (err error) {
 	return err
 }
 
+// GetFavorites return files and folders that are set favorite
 func GetFavorites(user *models.User) (files []*models.File, err error) {
 	files, err = user.FindFavorites()
 	if err != nil {
@@ -291,6 +301,7 @@ func GetFavorites(user *models.User) (files []*models.File, err error) {
 	return
 }
 
+// SearchFiles return files based on keyword
 func SearchFiles(user *models.User, keyword string) (files []*models.File, err error) {
 	files, err = user.SearchFiles(keyword)
 	if err != nil {

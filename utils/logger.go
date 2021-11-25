@@ -14,6 +14,7 @@ func buildLogger() {
 	globalLogger.SetFormatter(&logrus.TextFormatter{})
 }
 
+// GetLogger return the logger instance
 func GetLogger() *logrus.Logger {
 	loggerOnce.Do(buildLogger)
 	return globalLogger

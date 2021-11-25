@@ -9,6 +9,7 @@ import (
 	"strconv"
 )
 
+// GetUserList get user list in the system
 func GetUserList(c *gin.Context) {
 	user := c.Value("user").(*models.User)
 	users, err := service.GetUserList(user)
@@ -36,6 +37,7 @@ func GetUserList(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": 0, "users": resUserInfo})
 }
 
+// DeleteUser delete a user
 func DeleteUser(c *gin.Context) {
 	user := c.Value("user").(*models.User)
 	deleteUser := c.PostForm("delete_user")
@@ -63,6 +65,7 @@ func DeleteUser(c *gin.Context) {
 	}
 }
 
+// SetUserQuota set user storage quota
 func SetUserQuota(c *gin.Context) {
 	modifiedUser := c.PostForm("modified_user")
 	if modifiedUser == "" {
@@ -95,6 +98,7 @@ func SetUserQuota(c *gin.Context) {
 	}
 }
 
+// ToggleAdmin set user permission
 func ToggleAdmin(c *gin.Context) {
 	user := c.Value("user").(*models.User)
 	toggleUser := c.PostForm("toggle_user")
@@ -122,6 +126,7 @@ func ToggleAdmin(c *gin.Context) {
 	}
 }
 
+// ResetUserPassword reset password for a user
 func ResetUserPassword(c *gin.Context) {
 	resetUser := c.PostForm("reset_user")
 	if resetUser == "" {

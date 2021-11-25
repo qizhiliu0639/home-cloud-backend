@@ -12,21 +12,29 @@ type User struct {
 	Username string    `gorm:"type:varchar(50);unique;not null"`
 	Nickname string    `gorm:"type:varchar(50);not null"`
 	Email    string    `gorm:"type:varchar(50)"`
-	// 0 for male, 1 for female, 2 for other
+	// Gender 0 for male, 1 for female, 2 for other
 	Gender      int    `gorm:"type:tinyint;default:0"`
 	Bio         string `gorm:"type:text;default:null"`
+	// Password user password hashed by PBKDF2 and HKDF, then hash with MacSalt by SHA-512, in hex format
 	Password    string `gorm:"size:128;not null"`
+	// AccountSalt the salt used in PBKDF2 to derive a master key
 	AccountSalt string `gorm:"size:64;not null"`
+	// MacSalt the salt used to hash with auth key (derived from user password with PBKDF2 and HKDF)
 	MacSalt     string `gorm:"size:64;not null"`
-	// 0 for user, 1 for admin
+	// Status 0 for user, 1 for admin
 	Status int `gorm:"type:tinyint;default:0;comment:'user status"`
-	// default 1G quota
+	// Storage default 1G quota unit: byte
 	Storage uint64 `gorm:"default:1073741824;comment:'user Storage"`
-	// Used storage
+	// UsedStorage Used storage unit: byte
 	UsedStorage uint64 `gorm:"default:0;comment:'user Storage"`
 	// 0 for disable encryption, 1 for AES-256-GCM, 2 for ChaCha20-Poly1305, 3 for XChaCha20-Poly1305
 	Encryption    int    `gorm:"type:tinyint;default:0"`
-	EncryptionKey string `gorm:"size:64;default:null"`
+	// EncryptionKey AES-256-GCM encrypted key for file encryption, in hex format.
+	// First 12 byte (len:24) is the nonce in AES-256-GCM
+	// Last 48 byte (len:96) is the encrypted key
+	EncryptionKey string `gorm:"size:120;default:null"`
+	// Migration indicate that user is migrating encryption algorithm
+	// if Migration is 1, will not be allowed to log in
 	Migration     int    `gorm:"type:tinyint;default:0"`
 }
 

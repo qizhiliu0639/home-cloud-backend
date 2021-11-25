@@ -8,6 +8,7 @@ import (
 	"net/http"
 )
 
+// AuthSession require login and will set the user instance to context
 func AuthSession() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
@@ -37,6 +38,7 @@ func AuthSession() gin.HandlerFunc {
 	}
 }
 
+// CheckAdmin check if the logged-in user is admin
 func CheckAdmin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user := c.Value("user").(*models.User)

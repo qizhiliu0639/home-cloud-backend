@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+// LoginGetSalt return the salt of the user or a fake salt if the user not exists
 func LoginGetSalt(username string) string {
 	accountSalt, err := models.GetUserMacSalt(username)
 	if err != nil {
@@ -18,6 +19,7 @@ func LoginGetSalt(username string) string {
 	return accountSalt
 }
 
+// LoginValidate validate if the username and password match
 func LoginValidate(username string, password string) bool {
 	user, err := models.GetUserByUsername(username)
 	if err != nil {
@@ -26,15 +28,19 @@ func LoginValidate(username string, password string) bool {
 	if utils.GetHashWithSalt(password, user.MacSalt) != user.Password {
 		return false
 	}
+	if user.Migration == 1 {
+		return false
+	}
 	return true
 }
 
+// RegisterUser register a user in the system
 func RegisterUser(username string, password string, accountSalt string) error {
 	if _, err := models.GetUserByUsername(username); err != nil {
 		user := models.NewUser()
 		user.Username = username
 		user.AccountSalt = accountSalt
-		macSalt := utils.GenerateSalt()
+		macSalt := utils.GenerateSaltOrKey()
 		user.MacSalt = macSalt
 		user.Password = utils.GetHashWithSalt(password, macSalt)
 		user.Nickname = username
@@ -67,12 +73,14 @@ func RegisterUser(username string, password string, accountSalt string) error {
 	}
 }
 
+// ChangePassword change user password
 func ChangePassword(user *models.User, newAccountSalt string, newPassword string) {
-	newMacSalt := utils.GenerateSalt()
+	newMacSalt := utils.GenerateSaltOrKey()
 	newPass := utils.GetHashWithSalt(newPassword, newMacSalt)
 	user.ChangePassword(newPass, newAccountSalt, newMacSalt)
 }
 
+// UpdateProfile update user profile settings in the database
 func UpdateProfile(user *models.User, email string, nickName string, gender int, bio string) (err error) {
 	if gender < 0 || gender > 2 || !strings.Contains(email, "@") {
 		return ErrRequestPara
@@ -81,6 +89,7 @@ func UpdateProfile(user *models.User, email string, nickName string, gender int,
 	return nil
 }
 
+// GetUserList return current users in the system
 func GetUserList(user *models.User) ([]*models.User, error) {
 	users, err := user.GetUserList()
 	if err != nil {
@@ -90,6 +99,7 @@ func GetUserList(user *models.User) ([]*models.User, error) {
 	return append([]*models.User{user}, users...), nil
 }
 
+// DeleteUser delete the user
 func DeleteUser(user *models.User, deleteUserName string) error {
 	// Cannot self delete
 	if deleteUserName == user.Username {
@@ -109,6 +119,7 @@ func DeleteUser(user *models.User, deleteUserName string) error {
 	return nil
 }
 
+// ToggleAdmin change user permission
 func ToggleAdmin(user *models.User, toggleUsername string) error {
 	// Cannot self modify
 	if user.Username == toggleUsername {
@@ -130,6 +141,7 @@ func ToggleAdmin(user *models.User, toggleUsername string) error {
 	return nil
 }
 
+// SetUserQuota set user storage quota
 func SetUserQuota(modifiedUsername string, newSize uint64) error {
 	modifiedUser, err := models.GetUserByUsername(modifiedUsername)
 	if err != nil {
@@ -139,6 +151,7 @@ func SetUserQuota(modifiedUsername string, newSize uint64) error {
 	return nil
 }
 
+// ResetUserPassword reset the user password
 func ResetUserPassword(resetUsername string) (string, error) {
 	resetUser, err := models.GetUserByUsername(resetUsername)
 	if err != nil {

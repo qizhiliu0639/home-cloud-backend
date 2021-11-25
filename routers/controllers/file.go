@@ -13,6 +13,7 @@ import (
 	"strings"
 )
 
+// UploadFiles upload files to the system
 func UploadFiles(c *gin.Context) {
 	form, _ := c.MultipartForm()
 
@@ -62,6 +63,7 @@ func UploadFiles(c *gin.Context) {
 	})
 }
 
+// GetFolder get children list in the folder
 func GetFolder(c *gin.Context) {
 	user := c.Value("user").(*models.User)
 	vDir := c.Value("vDir").([]string)
@@ -112,6 +114,7 @@ func GetFolder(c *gin.Context) {
 	}
 }
 
+// NewFileOrFolder create a file or folder in current folder
 func NewFileOrFolder(c *gin.Context) {
 	user := c.Value("user").(*models.User)
 	vDir := c.Value("vDir").([]string)
@@ -147,6 +150,7 @@ func NewFileOrFolder(c *gin.Context) {
 	}
 }
 
+// GetFile download a file
 func GetFile(c *gin.Context) {
 	//This will only return error page in plain text because it may not be processed by axios
 	user := c.Value("user").(*models.User)
@@ -195,6 +199,7 @@ func GetFile(c *gin.Context) {
 	}
 }
 
+// GetFileOrFolderInfoByPath get the file or folder info based on its path
 func GetFileOrFolderInfoByPath(c *gin.Context) {
 	user := c.Value("user").(*models.User)
 	vDir := c.Value("vDir").([]string)
@@ -245,6 +250,7 @@ func GetFileOrFolderInfoByPath(c *gin.Context) {
 
 }
 
+// DeleteFile delete a file or folder and its children in the system
 func DeleteFile(c *gin.Context) {
 	user := c.Value("user").(*models.User)
 	vDir := c.Value("vDir").([]string)
@@ -280,6 +286,7 @@ func DeleteFile(c *gin.Context) {
 	}
 }
 
+// ToggleFavorite change the favorite status of a file or a folder
 func ToggleFavorite(c *gin.Context) {
 	user := c.Value("user").(*models.User)
 	vDir := c.Value("vDir").([]string)
@@ -313,6 +320,7 @@ func ToggleFavorite(c *gin.Context) {
 	}
 }
 
+// GetFavorites get all the files and folders that are set favorite
 func GetFavorites(c *gin.Context) {
 	user := c.Value("user").(*models.User)
 
@@ -340,6 +348,7 @@ func GetFavorites(c *gin.Context) {
 	}
 }
 
+// SearchFiles search file or folder based on keyword
 func SearchFiles(c *gin.Context) {
 	user := c.Value("user").(*models.User)
 	keyword := c.PostForm("keyword")

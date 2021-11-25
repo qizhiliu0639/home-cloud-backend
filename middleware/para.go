@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// ValidateDir validate the path in the dir parameter
 func ValidateDir() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		dir := c.PostForm("dir")

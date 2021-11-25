@@ -39,6 +39,7 @@ func loadConfig() {
 	}
 }
 
+// GetConfig return config instance
 func GetConfig() *Config {
 	configOnce.Do(loadConfig)
 	return globalConfig

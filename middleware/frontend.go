@@ -20,6 +20,7 @@ func exist(fSys fs.FS, path string) bool {
 	return true
 }
 
+// FrontendFileHandler return the static file in go embed if it is not under /api
 func FrontendFileHandler(staticFS embed.FS, root string) gin.HandlerFunc {
 	fSys, err := fs.Sub(staticFS, root)
 	if err != nil {

@@ -10,6 +10,8 @@ import (
 	"io"
 )
 
+var fakeSaltSalt = GenerateSaltOrKey()
+
 // GetHashWithSalt Assume str and salt are encoded to hex, if not will return empty string (will not match)
 func GetHashWithSalt(str string, salt string) string {
 	strBytes, err := hex.DecodeString(str)
@@ -25,8 +27,9 @@ func GetHashWithSalt(str string, salt string) string {
 	return hex.EncodeToString(hash[:])
 }
 
-func GenerateSalt() string {
-	// 256-bit salt
+// GenerateSaltOrKey generate a random 256-bit for encryption or hash, in hex format
+func GenerateSaltOrKey() string {
+	// 256-bit salt or key for encryption
 	length := 32
 	salt := make([]byte, length)
 	if _, err := rand.Read(salt); err != nil {
@@ -37,8 +40,15 @@ func GenerateSalt() string {
 	return hex.EncodeToString(salt[:])
 }
 
+// GenerateFakeSalt generate a fake salt using SHA-256 with not exist username
+// and a random salt generate at program starts
 func GenerateFakeSalt(username string) string {
-	hash := sha256.Sum256(append([]byte(username), []byte("FQMMWDqwsdq@!234DFQAWASCASEDQOAOS@#$#)T!$(@#")...))
+	fss, err := hex.DecodeString(fakeSaltSalt)
+	if err != nil {
+		// if error occur, use the fall back salt
+		fss = []byte("FQMMWDqwsdq@!234DFQAWASCASEDQOAOS@#$#)T!$(@#")
+	}
+	hash := sha256.Sum256(append([]byte(username), fss...))
 	return hex.EncodeToString(hash[:])
 }
 
@@ -51,8 +61,8 @@ func GeneratePasswordInfo() (newPassword string, newAccountSalt string, newMacSa
 		return
 	}
 	newPassword = hex.EncodeToString(newPass)
-	newAccountSalt = GenerateSalt()
-	newMacSalt = GenerateSalt()
+	newAccountSalt = GenerateSaltOrKey()
+	newMacSalt = GenerateSaltOrKey()
 	newMasterKey := pbkdf2.Key([]byte(newPassword), []byte(newAccountSalt), 1000, 64, sha512.New)
 	hkdfReader := hkdf.New(sha512.New, newMasterKey, []byte{}, []byte("HOME-CLOUD-AUTH-KEY-FOR-LOGIN"))
 	newAuth := make([]byte, 32)
@@ -68,8 +78,8 @@ func GeneratePasswordInfo() (newPassword string, newAccountSalt string, newMacSa
 // newAccountSalt is encoded in hex and decoded directly
 // because of compatibility with frontend salt generation
 func GeneratePasswordInfoFromPassword(newPassword string) (newAccountSalt string, newMacSalt string, newSavePassword string, err error) {
-	newAccountSalt = GenerateSalt()
-	newMacSalt = GenerateSalt()
+	newAccountSalt = GenerateSaltOrKey()
+	newMacSalt = GenerateSaltOrKey()
 	newMasterKey := pbkdf2.Key([]byte(newPassword), []byte(newAccountSalt), 1000, 64, sha512.New)
 	hkdfReader := hkdf.New(sha512.New, newMasterKey, []byte{}, []byte("HOME-CLOUD-AUTH-KEY-FOR-LOGIN"))
 	newAuth := make([]byte, 32)
