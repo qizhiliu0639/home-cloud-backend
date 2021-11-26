@@ -61,6 +61,7 @@ func InitRouter(router *gin.Engine) {
 		{
 			userAPI.PUT("/password", controllers.ChangePassword)
 			userAPI.POST("/profile", controllers.UpdateProfile)
+			userAPI.POST("/change_algorithm", controllers.ChangeEncryptionAlgorithm)
 		}
 
 		adminAPI := api.Group("/admin")

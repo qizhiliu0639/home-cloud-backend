@@ -14,14 +14,15 @@ func GetUserStatus(c *gin.Context) {
 		encryption = true
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"success":      0,
-		"username":     user.Username,
-		"status":       user.Status,
-		"email":        user.Email,
-		"nickname":     user.Nickname,
-		"gender":       user.Gender,
-		"bio":          user.Bio,
-		"account_salt": user.AccountSalt,
-		"encryption":   encryption,
+		"success":         0,
+		"username":        user.Username,
+		"status":          user.Status,
+		"email":           user.Email,
+		"nickname":        user.Nickname,
+		"gender":          user.Gender,
+		"bio":             user.Bio,
+		"account_salt":    user.AccountSalt,
+		"encryption":      encryption,
+		"encryption_algo": user.Encryption,
 	})
 }

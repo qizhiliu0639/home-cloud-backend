@@ -104,13 +104,14 @@ func InitAdminUser() error {
 	adminUser.ID = uuid.New()
 	adminUser.Username = "admin"
 	adminUser.Nickname = "admin"
-	newAccountSalt, newMacSalt, newSavePassword, err := utils.GeneratePasswordInfoFromPassword("admin")
+	newAccountSalt, newMacSalt, newSavePassword, newEncryptionKey, err := utils.GeneratePasswordInfoFromPassword("admin")
 	if err != nil {
 		return err
 	}
 	adminUser.AccountSalt = newAccountSalt
 	adminUser.MacSalt = newMacSalt
 	adminUser.Password = newSavePassword
+	adminUser.EncryptionKey = newEncryptionKey
 	adminUser.Status = 1
 	err = adminUser.RegisterUser()
 	if err != nil {

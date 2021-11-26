@@ -1,7 +1,8 @@
 package service
 
 import (
-	"fmt"
+	"encoding/hex"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"home-cloud/models"
 	"home-cloud/utils"
@@ -20,22 +21,19 @@ func LoginGetSalt(username string) string {
 }
 
 // LoginValidate validate if the username and password match
-func LoginValidate(username string, password string) bool {
+func LoginValidate(username string, password string) (bool, *models.User) {
 	user, err := models.GetUserByUsername(username)
 	if err != nil {
-		return false
+		return false, nil
 	}
 	if utils.GetHashWithSalt(password, user.MacSalt) != user.Password {
-		return false
+		return false, nil
 	}
-	if user.Migration == 1 {
-		return false
-	}
-	return true
+	return true, user
 }
 
 // RegisterUser register a user in the system
-func RegisterUser(username string, password string, accountSalt string) error {
+func RegisterUser(username string, password string, accountSalt string, encryptionKey string) error {
 	if _, err := models.GetUserByUsername(username); err != nil {
 		user := models.NewUser()
 		user.Username = username
@@ -44,14 +42,32 @@ func RegisterUser(username string, password string, accountSalt string) error {
 		user.MacSalt = macSalt
 		user.Password = utils.GetHashWithSalt(password, macSalt)
 		user.Nickname = username
+		var encryptionKeyByte []byte
+		encryptionKeyByte, err = hex.DecodeString(encryptionKey)
+		if err != nil {
+			return ErrRequestPara
+		}
+		var encryptKey []byte
+		encryptKey, err = hex.DecodeString(utils.GenerateSaltOrKey())
+		if err != nil {
+			return err
+		}
+		var newEncryptionKey string
+		newEncryptionKey, err = utils.EncryptEncryptionKey(encryptionKeyByte, encryptKey)
+		if err != nil {
+			utils.GetLogger().Panic("Create user error")
+			return err
+		}
+		user.EncryptionKey = newEncryptionKey
 		err = user.RegisterUser()
 		if err != nil {
+			utils.GetLogger().Panic("Create user error")
 			return err
 		}
 		//Create user folder
 		user, err = models.GetUserByUsername(username)
 		if err != nil {
-			utils.GetLogger().Panic("Create admin user error")
+			utils.GetLogger().Panic("Create user error")
 			return err
 		}
 		userID := user.ID.String()
@@ -74,10 +90,32 @@ func RegisterUser(username string, password string, accountSalt string) error {
 }
 
 // ChangePassword change user password
-func ChangePassword(user *models.User, newAccountSalt string, newPassword string) {
+func ChangePassword(user *models.User, newAccountSalt string, newPassword string, oldEncryption string, newEncryption string) error {
 	newMacSalt := utils.GenerateSaltOrKey()
 	newPass := utils.GetHashWithSalt(newPassword, newMacSalt)
-	user.ChangePassword(newPass, newAccountSalt, newMacSalt)
+	var newEncryptionKeyByte []byte
+	var err error
+	newEncryptionKeyByte, err = hex.DecodeString(newEncryption)
+	if err != nil {
+		return ErrRequestPara
+	}
+	var oldEncryptionKeyByte []byte
+	oldEncryptionKeyByte, err = hex.DecodeString(oldEncryption)
+	if err != nil {
+		return ErrRequestPara
+	}
+	var fileEncryptionKey []byte
+	fileEncryptionKey, err = utils.DecryptEncryptionKey(oldEncryptionKeyByte, user.EncryptionKey)
+	if err != nil {
+		return ErrRequestPara
+	}
+	var newFileEncryptionKey string
+	newFileEncryptionKey, err = utils.EncryptEncryptionKey(newEncryptionKeyByte, fileEncryptionKey)
+	if err != nil {
+		return ErrRequestPara
+	}
+	user.ChangePassword(newPass, newAccountSalt, newMacSalt, newFileEncryptionKey)
+	return nil
 }
 
 // UpdateProfile update user profile settings in the database
@@ -112,7 +150,6 @@ func DeleteUser(user *models.User, deleteUserName string) error {
 	dst := path.Join(utils.GetConfig().UserDataPath, deleteUser.ID.String())
 	err = os.RemoveAll(dst)
 	if err != nil {
-		fmt.Println(err)
 		return ErrSystem
 	}
 	deleteUser.DeleteUser()
@@ -176,4 +213,18 @@ func GetUserNameByID(uid uuid.UUID) string {
 	} else {
 		return user.Username
 	}
+}
+
+func ChangeEncryptionAlgorithm(user *models.User, algo int, c *gin.Context) error {
+	encryptedKey := c.Value("encryptionKey").([]byte)
+	fileEncryptionKey, err := utils.DecryptEncryptionKey(encryptedKey, user.EncryptionKey)
+	if err != nil {
+		return ErrRequestPara
+	}
+	if algo < 0 || algo > 3 {
+		return ErrRequestPara
+	}
+	user.SetMigration(1)
+	go MigrateAlgorithm(user, user.Encryption, algo, fileEncryptionKey)
+	return nil
 }

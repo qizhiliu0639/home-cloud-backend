@@ -77,16 +77,36 @@ func GeneratePasswordInfo() (newPassword string, newAccountSalt string, newMacSa
 // GeneratePasswordInfoFromPassword Generate authentication information for account with provided password
 // newAccountSalt is encoded in hex and decoded directly
 // because of compatibility with frontend salt generation
-func GeneratePasswordInfoFromPassword(newPassword string) (newAccountSalt string, newMacSalt string, newSavePassword string, err error) {
+func GeneratePasswordInfoFromPassword(newPassword string) (
+	newAccountSalt string,
+	newMacSalt string,
+	newSavePassword string,
+	newEncryptionKey string,
+	err error,
+) {
 	newAccountSalt = GenerateSaltOrKey()
 	newMacSalt = GenerateSaltOrKey()
 	newMasterKey := pbkdf2.Key([]byte(newPassword), []byte(newAccountSalt), 1000, 64, sha512.New)
 	hkdfReader := hkdf.New(sha512.New, newMasterKey, []byte{}, []byte("HOME-CLOUD-AUTH-KEY-FOR-LOGIN"))
 	newAuth := make([]byte, 32)
 	if _, err = io.ReadFull(hkdfReader, newAuth); err != nil {
-		return
+		return "", "", "", "", err
 	}
 	newAuthKey := hex.EncodeToString(newAuth)
 	newSavePassword = GetHashWithSalt(newAuthKey, newMacSalt)
+	hkdfReader = hkdf.New(sha512.New, newMasterKey, []byte{}, []byte("HOME-CLOUD-ENCRYPTION-KEY-FOR-FILES"))
+	newEncryptKey := make([]byte, 32)
+	if _, err = io.ReadFull(hkdfReader, newEncryptKey); err != nil {
+		return "", "", "", "", err
+	}
+	var encryptKey []byte
+	encryptKey, err = hex.DecodeString(GenerateSaltOrKey())
+	if err != nil {
+		return "", "", "", "", err
+	}
+	newEncryptionKey, err = EncryptEncryptionKey(newEncryptKey, encryptKey)
+	if err != nil {
+		return "", "", "", "", err
+	}
 	return
 }

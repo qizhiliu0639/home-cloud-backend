@@ -11,10 +11,11 @@ type File struct {
 	// 表字段
 	gorm.Model
 	ID uuid.UUID `gorm:"type:char(36);primaryKey"`
-	//1 for folder and 0 for file
-	IsDir int    `gorm:"default:0;not null"`
-	Name  string `gorm:"type:varchar(191);not null;uniqueIndex:idx_only_one"`
-	//uuid.null for root folder
+	// IsDir 1 for folder and 0 for file
+	IsDir int `gorm:"default:0;not null"`
+	// Name The name of the file or folder. For the root folder, it will be the username
+	Name string `gorm:"type:varchar(191);not null;uniqueIndex:idx_only_one"`
+	// ParentId uuid.Nil for root folder
 	ParentId  uuid.UUID `gorm:"type:char(36);not null;uniqueIndex:idx_only_one"`
 	OwnerId   uuid.UUID `gorm:"type:char(36);not null"`
 	CreatorId uuid.UUID `gorm:"type:char(36);not null"`
@@ -23,7 +24,7 @@ type File struct {
 	RealPath  string    `gorm:"not null"`
 	Favorite  int       `gorm:"default:0"`
 
-	// 数据库忽略字段
+	// Position The position of file. This field will be ignored in the database
 	Position string `gorm:"-"`
 }
 

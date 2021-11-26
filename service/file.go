@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"home-cloud/models"
 	"home-cloud/utils"
+	"io/ioutil"
 	"mime/multipart"
 	"os"
 	"path"
@@ -37,10 +38,13 @@ func UploadFile(upFile *multipart.FileHeader, user *models.User, folder *models.
 	dst := path.Join(utils.GetConfig().UserDataPath, user.ID.String(),
 		"data", "files", file.RealPath)
 	utils.GetLogger().Infof("Save file to %s", dst)
-	if err = c.SaveUploadedFile(upFile, dst); err != nil {
-		return ErrSave
-	}
 
+	if user.Encryption > 3 || user.Encryption < 0 {
+		return ErrSystem
+	}
+	if err = saveUploadFileEncryption(upFile, dst, user, c); err != nil {
+		return err
+	}
 	err = file.CreateFile()
 	if err != nil {
 		var mysqlErr *mysql.MySQLError
@@ -54,7 +58,7 @@ func UploadFile(upFile *multipart.FileHeader, user *models.User, folder *models.
 			return ErrSave
 		}
 	}
-	user.UpdateUsedStorage(user.UsedStorage + uint64(upFile.Size))
+	user.UpdateUsedStorage(user.UsedStorage + file.Size)
 	return nil
 }
 
@@ -80,8 +84,46 @@ func updateFile(upFile *multipart.FileHeader, user *models.User, folderID uuid.U
 	if err != nil {
 		err = ErrSave
 	}
-	user.UpdateUsedStorage(user.UsedStorage - oldSize + file.Size)
+	user.UpdateUsedStorage(user.UsedStorage - oldSize)
 	return file, err
+}
+
+func saveUploadFileEncryption(upFile *multipart.FileHeader, dst string, user *models.User, c *gin.Context) error {
+	encryptedKey := c.Value("encryptionKey").([]byte)
+	fileEncryptionKey, err := utils.DecryptEncryptionKey(encryptedKey, user.EncryptionKey)
+	if err != nil {
+		return ErrRequestPara
+	}
+	var file multipart.File
+	file, err = upFile.Open()
+	if err != nil {
+		return ErrRequestPara
+	}
+	var fileContent []byte
+	fileContent, err = ioutil.ReadAll(file)
+	errClose := file.Close()
+	if err != nil || errClose != nil {
+		return ErrRequestPara
+	}
+	var encryptedContent []byte
+	var errEncrypt error
+	if user.Encryption == 1 {
+		encryptedContent, errEncrypt = utils.EncryptFileAES(fileEncryptionKey, fileContent)
+	} else if user.Encryption == 2 {
+		encryptedContent, errEncrypt = utils.EncryptFileChaCha(fileEncryptionKey, fileContent)
+	} else if user.Encryption == 3 {
+		encryptedContent, errEncrypt = utils.EncryptFileXChaCha(fileEncryptionKey, fileContent)
+	} else {
+		encryptedContent = fileContent
+	}
+	if errEncrypt != nil {
+		return ErrSystem
+	}
+	err = ioutil.WriteFile(dst, encryptedContent, 0644)
+	if err != nil {
+		return ErrSave
+	}
+	return nil
 }
 
 // GetFolder return children in the folder
@@ -104,7 +146,7 @@ func GetFolder(folder *models.File, user *models.User) (files []*models.File, er
 }
 
 // NewFileOrFolder create a file or a folder in the current folder
-func NewFileOrFolder(folder *models.File, user *models.User, newName string, t string) (err error) {
+func NewFileOrFolder(folder *models.File, user *models.User, newName string, t string, c *gin.Context) (err error) {
 	if folder.OwnerId != user.ID {
 		return ErrInvalidOrPermission
 	}
@@ -135,15 +177,30 @@ func NewFileOrFolder(folder *models.File, user *models.User, newName string, t s
 		dst := path.Join(utils.GetConfig().UserDataPath, user.ID.String(),
 			"data", "files", file.RealPath)
 		utils.GetLogger().Infof("Create file to %s", dst)
-		var tmpFile *os.File
-		tmpFile, err = os.Create(dst)
+		encryptedKey := c.Value("encryptionKey").([]byte)
+		var fileEncryptionKey []byte
+		fileEncryptionKey, err = utils.DecryptEncryptionKey(encryptedKey, user.EncryptionKey)
+		if err != nil {
+			return ErrRequestPara
+		}
+		fileContent := make([]byte, 0)
+		var encryptedContent []byte
+		var errEncrypt error
+		if user.Encryption == 1 {
+			encryptedContent, errEncrypt = utils.EncryptFileAES(fileEncryptionKey, fileContent)
+		} else if user.Encryption == 2 {
+			encryptedContent, errEncrypt = utils.EncryptFileChaCha(fileEncryptionKey, fileContent)
+		} else if user.Encryption == 3 {
+			encryptedContent, errEncrypt = utils.EncryptFileXChaCha(fileEncryptionKey, fileContent)
+		} else {
+			encryptedContent = fileContent
+		}
+		if errEncrypt != nil {
+			return ErrSystem
+		}
+		err = ioutil.WriteFile(dst, encryptedContent, 0644)
 		if err != nil {
 			return ErrSystem
-		} else {
-			err = tmpFile.Close()
-			if err != nil {
-				return ErrSystem
-			}
 		}
 	}
 
@@ -174,6 +231,32 @@ func GetFile(file *models.File, user *models.User) (dst, filename string, err er
 	dst = path.Join(utils.GetConfig().UserDataPath, user.ID.String(),
 		"data", "files", file.RealPath)
 	return
+}
+
+func GetFileEncrypted(dst string, user *models.User, c *gin.Context) ([]byte, error) {
+	encryptedKey := c.Value("encryptionKey").([]byte)
+	fileEncryptionKey, err := utils.DecryptEncryptionKey(encryptedKey, user.EncryptionKey)
+	if err != nil {
+		return nil, ErrRequestPara
+	}
+	var encryptedFile []byte
+	encryptedFile, err = ioutil.ReadFile(dst)
+	if err != nil {
+		return nil, ErrSystem
+	}
+	var decryptedContent []byte
+	if user.Encryption == 1 {
+		decryptedContent, err = utils.DecryptFileAES(fileEncryptionKey, encryptedFile)
+	} else if user.Encryption == 2 {
+		decryptedContent, err = utils.DecryptFileChaCha(fileEncryptionKey, encryptedFile)
+	} else if user.Encryption == 3 {
+		decryptedContent, err = utils.DecryptFileXChaCha(fileEncryptionKey, encryptedFile)
+	}
+	if err != nil {
+		return nil, ErrSystem
+	}
+	return decryptedContent, nil
+
 }
 
 // GetFileOrFolderInfoByPath return file or folder

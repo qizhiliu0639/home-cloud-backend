@@ -13,14 +13,14 @@ type User struct {
 	Nickname string    `gorm:"type:varchar(50);not null"`
 	Email    string    `gorm:"type:varchar(50)"`
 	// Gender 0 for male, 1 for female, 2 for other
-	Gender      int    `gorm:"type:tinyint;default:0"`
-	Bio         string `gorm:"type:text;default:null"`
+	Gender int    `gorm:"type:tinyint;default:0"`
+	Bio    string `gorm:"type:text;default:null"`
 	// Password user password hashed by PBKDF2 and HKDF, then hash with MacSalt by SHA-512, in hex format
-	Password    string `gorm:"size:128;not null"`
+	Password string `gorm:"size:128;not null"`
 	// AccountSalt the salt used in PBKDF2 to derive a master key
 	AccountSalt string `gorm:"size:64;not null"`
 	// MacSalt the salt used to hash with auth key (derived from user password with PBKDF2 and HKDF)
-	MacSalt     string `gorm:"size:64;not null"`
+	MacSalt string `gorm:"size:64;not null"`
 	// Status 0 for user, 1 for admin
 	Status int `gorm:"type:tinyint;default:0;comment:'user status"`
 	// Storage default 1G quota unit: byte
@@ -28,14 +28,17 @@ type User struct {
 	// UsedStorage Used storage unit: byte
 	UsedStorage uint64 `gorm:"default:0;comment:'user Storage"`
 	// 0 for disable encryption, 1 for AES-256-GCM, 2 for ChaCha20-Poly1305, 3 for XChaCha20-Poly1305
-	Encryption    int    `gorm:"type:tinyint;default:0"`
+	Encryption int `gorm:"type:tinyint;default:0"`
 	// EncryptionKey AES-256-GCM encrypted key for file encryption, in hex format.
+	// The EncryptionKey was generated when user registered and is encrypted
+	// by the derived encryption key from user password
 	// First 12 byte (len:24) is the nonce in AES-256-GCM
 	// Last 48 byte (len:96) is the encrypted key
 	EncryptionKey string `gorm:"size:120;default:null"`
 	// Migration indicate that user is migrating encryption algorithm
-	// if Migration is 1, will not be allowed to log in
-	Migration     int    `gorm:"type:tinyint;default:0"`
+	// if Migration is 1 or 2, will not be allowed to log in
+	// Migration 1 for migration in progress, 2 for migration error occurred
+	Migration int `gorm:"type:tinyint;default:0"`
 }
 
 func (user *User) BeforeCreate(tx *gorm.DB) error {
@@ -94,11 +97,12 @@ func (user *User) RegisterUser() error {
 	return err
 }
 
-func (user *User) ChangePassword(newPass string, newAccountSalt string, newMacSalt string) {
+func (user *User) ChangePassword(newPass string, newAccountSalt string, newMacSalt string, newFileEncryptionKey string) {
 	utils.GetLogger().Warn("Change Password for " + user.Username)
 	user.Password = newPass
 	user.AccountSalt = newAccountSalt
 	user.MacSalt = newMacSalt
+	user.EncryptionKey = newFileEncryptionKey
 	DB.Save(&user)
 }
 
@@ -174,5 +178,15 @@ func (user *User) SetPassword(newPass string, newAccountSalt string, newMacSalt 
 	user.Password = newPass
 	user.AccountSalt = newAccountSalt
 	user.MacSalt = newMacSalt
+	DB.Save(user)
+}
+
+func (user *User) SetEncryption(newEncryption int) {
+	user.Encryption = newEncryption
+	DB.Save(user)
+}
+
+func (user *User) SetMigration(newMigration int) {
+	user.Migration = newMigration
 	DB.Save(user)
 }

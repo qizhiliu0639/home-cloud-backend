@@ -15,14 +15,17 @@ import (
 
 // UploadFiles upload files to the system
 func UploadFiles(c *gin.Context) {
-	form, _ := c.MultipartForm()
-
+	form, err := c.MultipartForm()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid Request"})
+	}
 	user := c.Value("user").(*models.User)
 
 	files := form.File["file"]
 	vDir := c.Value("vDir").([]string)
 
-	folder, err := service.GetFileOrFolderInfoByPath(vDir, user)
+	var folder *models.File
+	folder, err = service.GetFileOrFolderInfoByPath(vDir, user)
 	if err != nil {
 		var status int
 		if errors.Is(err, service.ErrInvalidOrPermission) {
@@ -44,7 +47,7 @@ func UploadFiles(c *gin.Context) {
 				"message": "Invalid File Name",
 			}
 		} else {
-			if err := service.UploadFile(file, user, folder, c); err != nil {
+			if err = service.UploadFile(file, user, folder, c); err != nil {
 				res[file.Filename] = gin.H{
 					"result":  false,
 					"message": GetErrorMessage(err),
@@ -142,7 +145,7 @@ func NewFileOrFolder(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": "Invalid Name"})
 		return
 	}
-	err = service.NewFileOrFolder(folder, user, newName, t)
+	err = service.NewFileOrFolder(folder, user, newName, t, c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": 1, "message": GetErrorMessage(err)})
 	} else {
@@ -179,11 +182,24 @@ func GetFile(c *gin.Context) {
 		return
 	}
 	var f []byte
-	f, err = ioutil.ReadFile(dst)
-	if err != nil {
-		utils.GetLogger().Errorf("Error when finding %s for %s", dst, file.Position)
-		c.String(http.StatusInternalServerError, "500 Internal Server Error")
-		return
+	if user.Encryption == 0 {
+		f, err = ioutil.ReadFile(dst)
+		if err != nil {
+			utils.GetLogger().Errorf("Error when finding %s for %s", dst, file.Position)
+			c.String(http.StatusInternalServerError, "500 Internal Server Error")
+			return
+		}
+	} else {
+		if user.Encryption < 0 || user.Encryption > 3 {
+			c.String(http.StatusBadRequest, "400 Bad Request")
+			return
+		}
+		f, err = service.GetFileEncrypted(dst, user, c)
+		if err != nil {
+			utils.GetLogger().Errorf("Error when finding and decrypting %s for %s", dst, file.Position)
+			c.String(http.StatusInternalServerError, "500 Internal Server Error")
+			return
+		}
 	}
 	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
 	c.Header("Content-Length", fmt.Sprintf("%d", len(f)))
