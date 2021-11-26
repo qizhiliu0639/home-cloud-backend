@@ -88,6 +88,8 @@ func updateFile(upFile *multipart.FileHeader, user *models.User, folderID uuid.U
 	return file, err
 }
 
+// saveUploadFileEncryption will save the upload file to the local file system
+// If user setting encryption is enabled, it will encrypt the file before writing to the system
 func saveUploadFileEncryption(upFile *multipart.FileHeader, dst string, user *models.User, c *gin.Context) error {
 	encryptedKey := c.Value("encryptionKey").([]byte)
 	fileEncryptionKey, err := utils.DecryptEncryptionKey(encryptedKey, user.EncryptionKey)
@@ -177,6 +179,7 @@ func NewFileOrFolder(folder *models.File, user *models.User, newName string, t s
 		dst := path.Join(utils.GetConfig().UserDataPath, user.ID.String(),
 			"data", "files", file.RealPath)
 		utils.GetLogger().Infof("Create file to %s", dst)
+		// If the user encryption setting is enabled, it will also encrypt the empty file
 		encryptedKey := c.Value("encryptionKey").([]byte)
 		var fileEncryptionKey []byte
 		fileEncryptionKey, err = utils.DecryptEncryptionKey(encryptedKey, user.EncryptionKey)
@@ -233,6 +236,7 @@ func GetFile(file *models.File, user *models.User) (dst, filename string, err er
 	return
 }
 
+// GetFileEncrypted will decrypt the file and return the original file content
 func GetFileEncrypted(dst string, user *models.User, c *gin.Context) ([]byte, error) {
 	encryptedKey := c.Value("encryptionKey").([]byte)
 	fileEncryptionKey, err := utils.DecryptEncryptionKey(encryptedKey, user.EncryptionKey)

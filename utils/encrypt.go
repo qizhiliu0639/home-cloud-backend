@@ -9,6 +9,9 @@ import (
 	"golang.org/x/crypto/chacha20poly1305"
 )
 
+// This file contains the wrapper functions for encryption and decryption in AEAD mode
+
+// generateNonce generate the 12-byte nonce for AES and ChaCha20-Poly1305
 func generateNonce() ([]byte, error) {
 	nonce := make([]byte, 12)
 	_, err := rand.Read(nonce)
@@ -18,6 +21,7 @@ func generateNonce() ([]byte, error) {
 	return nonce, nil
 }
 
+// generateNonceForXChaCha generate the 24-byte nonce for XChaCha20-Poly1305
 func generateNonceForXChaCha() ([]byte, error) {
 	nonce := make([]byte, 24)
 	_, err := rand.Read(nonce)

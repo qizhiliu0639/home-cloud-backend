@@ -215,6 +215,8 @@ func GetUserNameByID(uid uuid.UUID) string {
 	}
 }
 
+// ChangeEncryptionAlgorithm will set the Migration status of the user and use goroutine to call
+// migration process asynchronously
 func ChangeEncryptionAlgorithm(user *models.User, algo int, c *gin.Context) error {
 	encryptedKey := c.Value("encryptionKey").([]byte)
 	fileEncryptionKey, err := utils.DecryptEncryptionKey(encryptedKey, user.EncryptionKey)

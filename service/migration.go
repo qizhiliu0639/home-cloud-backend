@@ -8,6 +8,8 @@ import (
 	"path"
 )
 
+// MigrateAlgorithm will enter the current user data path, decrypt the file and encrypt it using new algorithm
+// then, it will set back the Migration status of the user to normal
 func MigrateAlgorithm(user *models.User, oldAlgorithm int, newAlgorithm int, fileEncryptionKey []byte) {
 	utils.GetLogger().Info("Migrating encryption algorithm for user " + user.Username)
 	user.SetEncryption(newAlgorithm)

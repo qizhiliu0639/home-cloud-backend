@@ -192,6 +192,7 @@ func UpdateProfile(c *gin.Context) {
 	}
 }
 
+// ChangeEncryptionAlgorithm it will change the encryption setting of the user
 func ChangeEncryptionAlgorithm(c *gin.Context) {
 	user := c.Value("user").(*models.User)
 	newAlgorithm := c.PostForm("algorithm")

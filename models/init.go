@@ -13,6 +13,7 @@ import (
 
 var DB *gorm.DB
 
+// InitDatabase init the database before program starts
 func InitDatabase() {
 	config := utils.GetConfig()
 	CreateDatabaseIfNotExist(config)
@@ -33,6 +34,7 @@ func InitDatabase() {
 	Migration()
 }
 
+// CreateDatabaseIfNotExist auto create the database/schema
 func CreateDatabaseIfNotExist(config *utils.Config) {
 	dsn := fmt.Sprintf("%s:%s@(%s:%s)/?charset=utf8mb4&parseTime=True&loc=Local",
 		config.DBUser,
@@ -57,6 +59,7 @@ func CreateDatabaseIfNotExist(config *utils.Config) {
 	}
 }
 
+// Migration auto create tables and create the default admin user and data path
 func Migration() {
 	err := os.MkdirAll(utils.GetConfig().UserDataPath, 0644)
 	if err != nil {

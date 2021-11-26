@@ -10,6 +10,7 @@ import (
 )
 
 // AuthSession require login and will set the user instance to context
+// AuthSession will also extract the encryption key derived from the user password in the cookies
 func AuthSession() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)

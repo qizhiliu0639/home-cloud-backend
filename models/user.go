@@ -26,6 +26,9 @@ type User struct {
 	// Storage default 1G quota unit: byte
 	Storage uint64 `gorm:"default:1073741824;comment:'user Storage"`
 	// UsedStorage Used storage unit: byte
+	// UsedStorage is calculated based on the original file size, not the encrypted file size
+	// since encryption will only add a small number of bytes to the file,
+	// e.g. 28 bytes in AES (12 bytes nonce and 16 bytes authentication)
 	UsedStorage uint64 `gorm:"default:0;comment:'user Storage"`
 	// 0 for disable encryption, 1 for AES-256-GCM, 2 for ChaCha20-Poly1305, 3 for XChaCha20-Poly1305
 	Encryption int `gorm:"type:tinyint;default:0"`

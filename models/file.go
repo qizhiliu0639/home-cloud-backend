@@ -28,6 +28,7 @@ type File struct {
 	Position string `gorm:"-"`
 }
 
+// TraceRoot used to find the position of current file
 func (file *File) TraceRoot() (err error) {
 	if len(file.Position) > 0 {
 		return nil
