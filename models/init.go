@@ -6,9 +6,12 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"home-cloud/utils"
+	"log"
 	"os"
 	"path"
+	"time"
 )
 
 var DB *gorm.DB
@@ -26,7 +29,19 @@ func InitDatabase() {
 	)
 	utils.GetLogger().Infof("Try to Connect to %s", dsn)
 
-	db, err := gorm.Open(mysql.Open(dsn))
+	gormLogger := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags),
+		logger.Config{
+			SlowThreshold:             time.Second,
+			LogLevel:                  logger.Error,
+			IgnoreRecordNotFoundError: true,
+			Colorful:                  true,
+		},
+	)
+
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: gormLogger,
+	})
 	if err != nil {
 		panic("Failed to connect to the database: " + err.Error())
 	}

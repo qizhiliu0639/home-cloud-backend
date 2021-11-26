@@ -13,6 +13,7 @@ var frontendFS embed.FS
 
 func main() {
 	bootstrap.BootStrap()
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 	router.Use(middleware.FrontendFileHandler(frontendFS, "web/build"))
 	routers.InitRouter(router)

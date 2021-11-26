@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"github.com/shiena/ansicolor"
 	"github.com/sirupsen/logrus"
+	"os"
 	"sync"
 )
 
@@ -11,7 +13,8 @@ var loggerOnce sync.Once
 func buildLogger() {
 	globalLogger = logrus.New()
 	globalLogger.SetLevel(logrus.InfoLevel)
-	globalLogger.SetFormatter(&logrus.TextFormatter{})
+	globalLogger.SetFormatter(&logrus.TextFormatter{ForceColors: true})
+	globalLogger.SetOutput(ansicolor.NewAnsiColorWriter(os.Stdout))
 }
 
 // GetLogger return the logger instance
