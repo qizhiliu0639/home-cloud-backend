@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/shiena/ansicolor"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -31,12 +30,12 @@ func InitDatabase() {
 	utils.GetLogger().Infof("Try to Connect to %s", dsn)
 
 	gormLogger := logger.New(
-		log.New(ansicolor.NewAnsiColorWriter(os.Stdout), "\r\n", log.LstdFlags),
+		log.New(os.Stdout, "\r\n", log.LstdFlags),
 		logger.Config{
 			SlowThreshold:             time.Second,
 			LogLevel:                  logger.Error,
 			IgnoreRecordNotFoundError: true,
-			Colorful:                  true,
+			Colorful:                  false,
 		},
 	)
 

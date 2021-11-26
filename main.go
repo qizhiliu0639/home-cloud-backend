@@ -3,11 +3,11 @@ package main
 import (
 	"embed"
 	"github.com/gin-gonic/gin"
-	"github.com/shiena/ansicolor"
 	"home-cloud/bootstrap"
 	"home-cloud/middleware"
 	"home-cloud/routers"
-	"os"
+	"io/ioutil"
+	"log"
 )
 
 //go:embed web/build
@@ -15,9 +15,11 @@ var frontendFS embed.FS
 
 func main() {
 	bootstrap.BootStrap()
+	// disable log in gin session middleware (it uses the standard logger)
+	log.SetOutput(ioutil.Discard)
 	gin.SetMode(gin.ReleaseMode)
-	gin.ForceConsoleColor()
-	gin.DefaultWriter = ansicolor.NewAnsiColorWriter(os.Stdout)
+	// disable log color
+	gin.DisableConsoleColor()
 	router := gin.Default()
 	router.Use(middleware.FrontendFileHandler(frontendFS, "web/build"))
 	routers.InitRouter(router)

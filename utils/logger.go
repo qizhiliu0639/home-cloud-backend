@@ -1,9 +1,8 @@
 package utils
 
 import (
-	"github.com/shiena/ansicolor"
 	"github.com/sirupsen/logrus"
-	"os"
+	"github.com/t-tomalak/logrus-easy-formatter"
 	"sync"
 )
 
@@ -13,8 +12,10 @@ var loggerOnce sync.Once
 func buildLogger() {
 	globalLogger = logrus.New()
 	globalLogger.SetLevel(logrus.InfoLevel)
-	globalLogger.SetFormatter(&logrus.TextFormatter{ForceColors: true})
-	globalLogger.SetOutput(ansicolor.NewAnsiColorWriter(os.Stdout))
+	globalLogger.SetFormatter(&easy.Formatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+		LogFormat:       "[%lvl%]: %time% - %msg%\r\n",
+	})
 }
 
 // GetLogger return the logger instance
