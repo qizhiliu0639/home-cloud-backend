@@ -197,12 +197,12 @@ func ResetUserPassword(resetUsername string) (string, error) {
 	if resetUser.Encryption > 0 {
 		return "", ErrResetForbidden
 	}
-	var newPassword, newAccountSalt, newMacSalt, newSavePassword string
-	newPassword, newAccountSalt, newMacSalt, newSavePassword, err = utils.GeneratePasswordInfo()
+	var newPassword, newAccountSalt, newMacSalt, newSavePassword, newEncryptionKey string
+	newPassword, newAccountSalt, newMacSalt, newSavePassword, newEncryptionKey, err = utils.GeneratePasswordInfo()
 	if err != nil {
 		return "", ErrSystem
 	}
-	resetUser.SetPassword(newSavePassword, newAccountSalt, newMacSalt)
+	resetUser.SetPassword(newSavePassword, newAccountSalt, newMacSalt, newEncryptionKey)
 	return newPassword, nil
 }
 

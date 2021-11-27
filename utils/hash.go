@@ -55,22 +55,20 @@ func GenerateFakeSalt(username string) string {
 // GeneratePasswordInfo Generate authentication information for a new account
 // newAccountSalt is encoded in hex and decoded directly
 // because of compatibility with frontend salt generation
-func GeneratePasswordInfo() (newPassword string, newAccountSalt string, newMacSalt string, newSavePassword string, err error) {
+func GeneratePasswordInfo() (
+	newPassword string,
+	newAccountSalt string,
+	newMacSalt string,
+	newSavePassword string,
+	newEncryptionKey string,
+	err error,
+) {
 	newPass := make([]byte, 4)
 	if _, err = rand.Read(newPass); err != nil {
 		return
 	}
 	newPassword = hex.EncodeToString(newPass)
-	newAccountSalt = GenerateSaltOrKey()
-	newMacSalt = GenerateSaltOrKey()
-	newMasterKey := pbkdf2.Key([]byte(newPassword), []byte(newAccountSalt), 1000, 64, sha512.New)
-	hkdfReader := hkdf.New(sha512.New, newMasterKey, []byte{}, []byte("HOME-CLOUD-AUTH-KEY-FOR-LOGIN"))
-	newAuth := make([]byte, 32)
-	if _, err = io.ReadFull(hkdfReader, newAuth); err != nil {
-		return
-	}
-	newAuthKey := hex.EncodeToString(newAuth)
-	newSavePassword = GetHashWithSalt(newAuthKey, newMacSalt)
+	newAccountSalt, newMacSalt, newSavePassword, newEncryptionKey, err = GeneratePasswordInfoFromPassword(newPassword)
 	return
 }
 

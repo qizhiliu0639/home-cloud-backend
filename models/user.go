@@ -177,10 +177,11 @@ func GetAdminCount() (count int64) {
 	return
 }
 
-func (user *User) SetPassword(newPass string, newAccountSalt string, newMacSalt string) {
+func (user *User) SetPassword(newPass string, newAccountSalt string, newMacSalt string, newEncryptionKey string) {
 	user.Password = newPass
 	user.AccountSalt = newAccountSalt
 	user.MacSalt = newMacSalt
+	user.EncryptionKey = newEncryptionKey
 	DB.Save(user)
 }
 

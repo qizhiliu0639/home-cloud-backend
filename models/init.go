@@ -141,6 +141,7 @@ func InitAdminUser() error {
 		fmt.Println("This notification will not show again. Please save the username and password.")
 		fmt.Println("Press enter to continue...")
 		_, _ = fmt.Scanln()
+		fmt.Println("Start running...")
 	}
 	return nil
 }
