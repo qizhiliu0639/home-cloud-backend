@@ -30,6 +30,7 @@ func BootStrap() {
 			fmt.Println("Mysql Username: root")
 			fmt.Println("Mysql Password: root")
 			fmt.Println("Mysql Database Name: homecloud")
+			fmt.Println("Listen Address: 127.0.0.1:8080")
 			var input string
 			for {
 				fmt.Print("Do you want to continue? [Y/n] ")
@@ -64,6 +65,7 @@ func initConfigJson() {
 	cfg.DBUser = "root"
 	cfg.DBPassword = "root"
 	cfg.DBName = "homecloud"
+	cfg.ListenAddress = "127.0.0.1:8080"
 	jsonFile, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
 		panic("Create config.json error: " + err.Error())

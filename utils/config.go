@@ -7,12 +7,13 @@ import (
 )
 
 type Config struct {
-	UserDataPath string `json:"user_data_path"`
-	DBHost       string `json:"db_host"`
-	DBPort       string `json:"db_port"`
-	DBUser       string `json:"db_user"`
-	DBPassword   string `json:"db_password"`
-	DBName       string `json:"db_name"`
+	UserDataPath  string `json:"user_data_path"`
+	DBHost        string `json:"db_host"`
+	DBPort        string `json:"db_port"`
+	DBUser        string `json:"db_user"`
+	DBPassword    string `json:"db_password"`
+	DBName        string `json:"db_name"`
+	ListenAddress string `json:"listen_address"`
 }
 
 var globalConfig *Config
@@ -33,7 +34,8 @@ func loadConfig() {
 		globalConfig.DBPort == "" ||
 		globalConfig.DBUser == "" ||
 		globalConfig.DBPassword == "" ||
-		globalConfig.DBName == "" {
+		globalConfig.DBName == "" ||
+		globalConfig.ListenAddress == "" {
 		panic("Parse config.json error: missing some required fields. " +
 			"Please check the file or generate a new one by removing it and running again. ")
 	}

@@ -4,5 +4,6 @@
   "db_port": "3306",
   "db_user": "root",
   "db_password": "root",
-  "db_name": "homecloud"
+  "db_name": "homecloud",
+  "listen_address": "127.0.0.1:8080"
 }

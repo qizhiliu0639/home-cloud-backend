@@ -6,6 +6,7 @@ import (
 	"home-cloud/bootstrap"
 	"home-cloud/middleware"
 	"home-cloud/routers"
+	"home-cloud/utils"
 	"io/ioutil"
 	"log"
 )
@@ -23,7 +24,7 @@ func main() {
 	router := gin.Default()
 	router.Use(middleware.FrontendFileHandler(frontendFS, "web/build"))
 	routers.InitRouter(router)
-	err := router.Run("127.0.0.1:8080")
+	err := router.Run(utils.GetConfig().ListenAddress)
 	if err != nil {
 		panic(err)
 	}
